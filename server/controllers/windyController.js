@@ -63,8 +63,9 @@ const fetchAndInsertWindyData = async (req, res) => {
     // Insert or update data in the database
     for (const date in temperatureData) {
       const temps = temperatureData[date];
-      const minTemp = Math.min(...temps).toFixed(1); // Calculate min temperature
-      const maxTemp = Math.max(...temps).toFixed(1); // Calculate max temperature
+      const minTemp = Math.round(Math.min(...temps)); // round min temp
+      const maxTemp = Math.round(Math.max(...temps)); // round max temp
+      const currentTemp = Math.round(temps[0]);       // round current temp
 
       // Check if the date already exists in the database
       const selectWindyTableSql = `SELECT Win_Min, Win_Max FROM Windy WHERE Win_Date = ?`;
@@ -76,29 +77,28 @@ const fetchAndInsertWindyData = async (req, res) => {
         let finalMinTemp = minTemp;
         let finalMaxTemp = maxTemp;
 
-        if (dataRow) { // Calculate the average if the date already exists
-          finalMinTemp = ((parseFloat(dataRow.Win_Min) + parseFloat(minTemp)) / 2).toFixed(1);
-          finalMaxTemp = ((parseFloat(dataRow.Win_Max) + parseFloat(maxTemp)) / 2).toFixed(1);
+        if (dataRow) { // calculate the average if the date already exists
+          finalMinTemp = Math.round((parseFloat(dataRow.Win_Min) + parseFloat(minTemp)) / 2);
+          finalMaxTemp = Math.round((parseFloat(dataRow.Win_Max) + parseFloat(maxTemp)) / 2);
         }
 
         // Insert or update the database
         const insertWindyDataQuery = `
-          INSERT INTO Windy (Win_Date, Win_Min, Win_Max) 
-          VALUES (?, ?, ?)
+          INSERT INTO Windy (Win_Date, Win_Min, Win_Max, Win_Current) 
+          VALUES (?, ?, ?, ?)
           ON CONFLICT(Win_Date) DO UPDATE 
           SET Win_Min = excluded.Win_Min, 
-              Win_Max = excluded.Win_Max;`;
+              Win_Max = excluded.Win_Max,
+              Win_Current = excluded.Win_Current;`;
 
-        db.run(insertWindyDataQuery, [date, finalMinTemp, finalMaxTemp], function (err) {
+        db.run(insertWindyDataQuery, [date, finalMinTemp, finalMaxTemp, currentTemp], function (err) {
           if (err) {
             res.status(500).json({ errMessage: err.message });
           }
         });
       });
     }
-
     res.json({ message: "Windy data inserted" });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -110,7 +110,20 @@ cron.schedule('0 0 * * *', async () => {
   await fetchAndInsertWindyData();
 });
 
-// retrieve the data from the table to display it using the frontend
+// retrieve the daily data from the database
+const getWindyDataForToday = (req, res) => {
+  const today = new Date().toISOString().split("T")[0];
+  const getWindDataQuery = "SELECT * FROM Windy WHERE Win_Date = ?;";
+
+  db.all(getWindDataQuery, [today], (err, dataRow) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ data: dataRow });
+  });
+};
+
+// retrieve the weekly data from the database
 const getWindyDataForSevenDaysChart = (req, res) => {
   const today = new Date().toISOString().split("T")[0];
   const sevenDaysLater = new Date();
@@ -126,4 +139,4 @@ const getWindyDataForSevenDaysChart = (req, res) => {
   });
 };
 
-module.exports = { fetchAndInsertWindyData, getWindyDataForSevenDaysChart };
+module.exports = { fetchAndInsertWindyData, getWindyDataForToday, getWindyDataForSevenDaysChart };

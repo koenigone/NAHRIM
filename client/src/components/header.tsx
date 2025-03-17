@@ -6,7 +6,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import ToggleTheme from "./toggleTheme";
-import ChangeUnit from "./changeUnit";
 
 const Header = () => {
   const navigationLinks = [
@@ -56,7 +55,6 @@ const Header = () => {
           <option value={3}>METOffice</option>
         </Select>
         
-        <ChangeUnit />
         <ToggleTheme />
       </Flex>
     </Flex>

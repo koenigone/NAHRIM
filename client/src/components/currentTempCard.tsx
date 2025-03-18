@@ -4,6 +4,7 @@ import { WindyData } from './types';
 import { Card, CardBody, useColorModeValue, Text, Flex, CircularProgress, CircularProgressLabel } from "@chakra-ui/react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTemperature1 } from '@fortawesome/free-solid-svg-icons';
+import toast from 'react-hot-toast';
 
 const CurrentTempCard = () => {
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ const CurrentTempCard = () => {
           setTodayData(windyTableData[0]);
         }
       } catch (error) {
-        console.error('Error fetching chart data:', error);
+        toast.error("Error fetching today's data" + error);
       } finally {
         setLoading(false);
       }
@@ -29,6 +30,11 @@ const CurrentTempCard = () => {
 
     fetchChartData();
   }, []);
+
+  const getDayOfWeek = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", { weekday: "long" });
+  };
 
   const bgColor = useColorModeValue("white", "gray.800");
 
@@ -56,7 +62,7 @@ const CurrentTempCard = () => {
         ) : todayData ? (
           <Flex direction="column" align="center" justify="center">
             <Text fontSize="2xl" fontWeight="bold" mb={4}>
-              <FontAwesomeIcon icon={faTemperature1} /> Today
+              <FontAwesomeIcon icon={faTemperature1} /> {getDayOfWeek(todayData.Win_Date)}
             </Text>
             <Flex mt={4} justify="space-between" width="100%">
               <Flex direction="column" align="center">

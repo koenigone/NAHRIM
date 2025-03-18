@@ -3,6 +3,7 @@ import axios from 'axios';
 import { WindyData } from './types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardBody, useColorModeValue } from '@chakra-ui/react';
+import toast from 'react-hot-toast';
 
 const ComparisonChart = () => {
   const [data, setData] = useState<WindyData[]>([]);
@@ -28,7 +29,7 @@ const ComparisonChart = () => {
           setData(chartData);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        toast.error('Error fetching comparison chart:' + error);
       }
     };
 

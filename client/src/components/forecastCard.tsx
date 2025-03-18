@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { WindyData } from './types';
-import { Card, CardBody, useColorModeValue, Text, Flex, Box, SimpleGrid } from "@chakra-ui/react";
+import { Card, CardBody, useColorModeValue, Text, Flex, Box, SimpleGrid, Tooltip } from "@chakra-ui/react";
+import toast from 'react-hot-toast';
 
 const WeatherDashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,7 @@ const WeatherDashboard = () => {
         // filter data for Monday to Friday
         setWeeklyData(windyTableData.slice(0, 5)); // First 5 days
       } catch (error) {
-        console.error('Error fetching chart data:', error);
+        toast.error('Error fetching chart forecast chart:' + error);
       } finally {
         setLoading(false);
       }
@@ -31,6 +32,10 @@ const WeatherDashboard = () => {
 
     fetchChartData();
   }, []);
+
+  const calculateAverage = (min: number, max: number) => {
+    return  Math.round((min + max) / 2);
+  };
 
   return (
     <Card bg={bgColor} p={6} color="gray.500" boxShadow="md" borderRadius="2xl" maxWidth="700" height="319">
@@ -47,9 +52,11 @@ const WeatherDashboard = () => {
                   <Text fontSize="sm" color="gray.500">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][index]}
                   </Text>
-                  <Text fontSize="lg" fontWeight="bold">
-                    {data.Win_Current}°c
-                  </Text>
+                  <Tooltip label="Average" bg="gray.500" hasArrow>
+                    <Text fontSize="lg" fontWeight="bold">
+                      {calculateAverage(data.Win_Min, data.Win_Max)}°c
+                    </Text>
+                  </Tooltip>
                   <Box>
                   <Text fontSize="14px" color="gray.500" fontWeight="bold">
                     {data.Win_Max}°
@@ -64,16 +71,14 @@ const WeatherDashboard = () => {
             </SimpleGrid>
 
             {todayData && (
-              <Flex direction="row" align="center" justify="space-between">
+              <Flex direction="row" align="center" justify="space-between" px={4}>
                 <Box>
-                  <Text fontSize="2xl" fontWeight="bold">
-                    Today
-                  </Text>
+                  <Text fontSize="2xl" fontWeight="bold">Penang</Text>
                   <Text fontSize="4xl" fontWeight="bold" mt={2}>
                     {todayData.Win_Current}°C
                   </Text>
                   <Text fontSize="lg" color="gray.500" mt={2}>
-                    Sunny
+                    Now
                   </Text>
                 </Box>
 

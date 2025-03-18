@@ -3,6 +3,7 @@ import axios from 'axios';
 import { WindyData } from './types';
 import { Card, CardBody, useColorModeValue } from '@chakra-ui/react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import toast from 'react-hot-toast';
 
 const TemperatureChart = () => {
   const [chartData, setChartData] = useState([]);
@@ -10,6 +11,10 @@ const TemperatureChart = () => {
   const [error] = useState(null);
   const bgColor = useColorModeValue('white', 'gray.800');
   const gridColor = useColorModeValue('#e2e8f0', '#2d3748');
+
+  const calculateAverage = (min:number, max:number) => {
+    return ((min + max) / 2);
+  }
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -23,12 +28,13 @@ const TemperatureChart = () => {
             day: days[new Date(item.Win_Date).getDay()],
             min: item.Win_Min,
             max: item.Win_Max,
+            avg: Math.round(calculateAverage(item.Win_Min, item.Win_Max))
           };
         });
 
         setChartData(transformedChartData);
       } catch (error) {
-        console.error('Error fetching chart data:', error);
+        toast.error('Error fetching weekly chart data:' + error);
       } finally {
         setLoading(false);
       }
@@ -57,8 +63,9 @@ const TemperatureChart = () => {
               }}
             />
             <Legend />
-            <Line type="monotone" dataKey="max" stroke="#3dad35" strokeWidth={3} dot={{ r: 5, fill: '#3dad35' }} activeDot={{ r: 8 }} />
-            <Line type="monotone" dataKey="min" stroke="#1874bb" strokeWidth={3} dot={{ r: 5, fill: '#1874bb' }} activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="min" stroke="#3dad35" strokeWidth={3} dot={{ r: 5, fill: '#1874bb' }} activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="max" stroke="#1874bb" strokeWidth={3} dot={{ r: 5, fill: '#3dad35' }} activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="avg" stroke="#94c122" strokeWidth={3} dot={{ r: 5, fill: '#1874bb' }} activeDot={{ r: 8 }} />
           </LineChart>
         </ResponsiveContainer>
       </CardBody>

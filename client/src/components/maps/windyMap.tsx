@@ -1,15 +1,92 @@
-import { Card, CardBody, useColorModeValue, Text } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Popup,
+  Tooltip,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { Text, Flex } from "@chakra-ui/react";
+
+interface WindyDataPoint {
+  lat: number;
+  lon: number;
+  temperature: number;
+  date: string;
+}
 
 const WindyMap = () => {
+  const [windyData, setWindyData] = useState<WindyDataPoint[]>([]);
 
-  const bgColor = useColorModeValue("white", "gray.800");
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0]; // Get today's date (YYYY-MM-DD)
+
+    const fetchWindyData = async () => {
+      try {
+        const response = await fetch("/windyMapData"); // Update with your API route
+        const data = await response.json();
+        const filteredData = data.filter((d: WindyDataPoint) => d.date === today);
+        console.log("Windy Data for Today:", filteredData);
+        setWindyData(filteredData);
+      } catch (error) {
+        console.error("Error fetching Windy data:", error);
+      }
+    };
+
+    fetchWindyData();
+  }, []);
+
+  const getColor = (temp: number) => {
+    return temp > 28 ? "#C43031" : temp > 26 ? "#EFCE11" : "#3FAA37";
+  };
 
   return (
-    <Card bg={bgColor} boxShadow="md" borderRadius="2xl" maxWidth="442" height="690">
-      <CardBody>
-          <Text>Windy map</Text>
-      </CardBody>
-    </Card>
+    <>
+      <Flex justifyContent="center" gap={4} alignItems="center" marginBottom={4}>
+        <Text fontSize={27} fontWeight="bold">Windy.com</Text>
+      </Flex>
+
+      <MapContainer
+        center={[5.4, 100.3]}
+        zoom={11}
+        style={{ width: "442px", height: "630px", borderRadius: "10px" }}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer
+          url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, 
+            &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; 
+            <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+        />
+
+        {windyData.map((point, index) => (
+          <CircleMarker
+            key={index}
+            center={[point.lat, point.lon]}
+            radius={10}
+            fillColor={getColor(point.temperature)}
+            color="#000"
+            weight={1}
+            opacity={1}
+            fillOpacity={0.9}
+          >
+            <Tooltip direction="top" offset={[0, -10]} permanent>
+              <span className="temperature-label">{Math.round(point.temperature)}°C</span>
+            </Tooltip>
+            <Popup>
+              <strong>Temp:</strong> {Math.round(point.temperature)}°C
+              <br />
+              <strong>Date:</strong> {point.date}
+              <br />
+              <strong>Lat:</strong> {point.lat}
+              <br />
+              <strong>Lon:</strong> {point.lon}
+            </Popup>
+          </CircleMarker>
+        ))}
+      </MapContainer>
+    </>
   );
 };
 

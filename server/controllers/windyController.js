@@ -100,7 +100,7 @@ const fetchAndInsertWindyData = async (req, res) => {
     }
     res.json({ message: "Windy data inserted" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ errMessage: error.message });
   }
 };
 
@@ -117,7 +117,7 @@ const getWindyDataForToday = (req, res) => {
 
   db.all(getWindDataQuery, [today], (err, dataRow) => {
     if (err) {
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ errMessage: err.message });
     }
     res.json({ data: dataRow });
   });
@@ -133,7 +133,7 @@ const getWindyDataForSevenDaysChart = (req, res) => {
 
   db.all(getWindDataQuery, [today, sevenDaysLater.toISOString().split("T")[0]], (err, dataRow) => {
     if (err) {
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ errMessage: err.message });
     }
     res.json({ data: dataRow });
   });

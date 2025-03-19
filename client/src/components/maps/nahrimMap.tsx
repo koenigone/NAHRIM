@@ -3,14 +3,12 @@ import Papa from "papaparse";
 import {
   MapContainer,
   TileLayer,
-  Marker,
   Popup,
   CircleMarker,
   Tooltip,
 } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Select, Card, CardBody, Text, Flex } from "@chakra-ui/react";
+import { Select, Text, Flex } from "@chakra-ui/react";
 
 interface DataPoint {
   Year: number;
@@ -18,7 +16,7 @@ interface DataPoint {
   Day: number;
   Latitude: number;
   Longitude: number;
-  RCP4_5_Avg: number; // Fixed key (no spaces)
+  RCP4_5_Avg: number;
 }
 
 const NahrimMap = () => {
@@ -27,20 +25,22 @@ const NahrimMap = () => {
   const [csvData, setCsvData] = useState<DataPoint[]>([]);
 
   useEffect(() => {
-    // Load and parse CSV file
     Papa.parse("/src/data/Temp_PP_aveRCP_MacApr_2025_2030.csv", {
+      // Load and parse CSV file
       download: true,
       header: true,
       dynamicTyping: true,
       complete: (result) => {
-        // Sanitize keys (trim spaces)
-        const cleanedData = result.data.map((row: any) =>
-          Object.fromEntries(
-            Object.entries(row).map(([key, value]) => [
-              key.trim().replace(/\./g, "_"),
-              value,
-            ])
-          )
+        const cleanedData = result.data.map(
+          (
+            row: any // sanitize keys
+          ) =>
+            Object.fromEntries(
+              Object.entries(row).map(([key, value]) => [
+                key.trim().replace(/\./g, "_"),
+                value,
+              ])
+            )
         );
         console.log("Sanitized CSV Data:", cleanedData);
         setCsvData(cleanedData as unknown as DataPoint[]);
@@ -66,7 +66,7 @@ const NahrimMap = () => {
     }
   }, [selectedDate, csvData]);
 
-  // Generate unique dates for the dropdown
+  // generate unique dates for the dropdown
   const dates = Array.from(
     new Set(
       csvData
@@ -86,7 +86,12 @@ const NahrimMap = () => {
 
   return (
     <>
-      <Flex justifyContent="center" gap={4} alignItems="center" marginBottom={4}>
+      <Flex
+        justifyContent="center"
+        gap={4}
+        alignItems="center"
+        marginBottom={4}
+      >
         <Select
           onChange={(e) => setSelectedDate(e.target.value)}
           value={selectedDate}
@@ -99,7 +104,9 @@ const NahrimMap = () => {
             </option>
           ))}
         </Select>
-        <Text fontSize={27} fontWeight="bold">NAHRIM</Text>
+        <Text fontSize={27} fontWeight="bold">
+          NAHRIM
+        </Text>
       </Flex>
       <MapContainer
         center={[5.4, 100.3]}
@@ -126,7 +133,9 @@ const NahrimMap = () => {
               fillOpacity={0.9}
             >
               <Tooltip direction="top" offset={[0, -10]} permanent>
-                <span className="temperature-label">{Math.round(point.RCP4_5_Avg)}°C</span>
+                <span className="temperature-label">
+                  {Math.round(point.RCP4_5_Avg)}°C
+                </span>
               </Tooltip>
               <Popup>
                 <strong>Temp:</strong> {Math.round(point.RCP4_5_Avg)}°C

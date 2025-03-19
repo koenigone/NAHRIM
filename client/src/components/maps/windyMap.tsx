@@ -26,7 +26,9 @@ const WindyMap = () => {
       try {
         const response = await fetch("/windyMapData"); // Update with your API route
         const data = await response.json();
-        const filteredData = data.filter((d: WindyDataPoint) => d.date === today);
+        const filteredData = data.filter(
+          (d: WindyDataPoint) => d.date === today
+        );
         console.log("Windy Data for Today:", filteredData);
         setWindyData(filteredData);
       } catch (error) {
@@ -43,8 +45,15 @@ const WindyMap = () => {
 
   return (
     <>
-      <Flex justifyContent="center" gap={4} alignItems="center" marginBottom={4}>
-        <Text fontSize={27} fontWeight="bold">Windy.com</Text>
+      <Flex
+        justifyContent="center"
+        gap={4}
+        alignItems="center"
+        marginBottom={4}
+      >
+        <Text fontSize={27} fontWeight="bold">
+          Windy.com
+        </Text>
       </Flex>
 
       <MapContainer
@@ -72,7 +81,9 @@ const WindyMap = () => {
             fillOpacity={0.9}
           >
             <Tooltip direction="top" offset={[0, -10]} permanent>
-              <span className="temperature-label">{Math.round(point.temperature)}°C</span>
+              <span className="temperature-label">
+                {Math.round(point.temperature)}°C
+              </span>
             </Tooltip>
             <Popup>
               <strong>Temp:</strong> {Math.round(point.temperature)}°C

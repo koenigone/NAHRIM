@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const axios = require("axios");
 const cron = require('node-cron');
+const { mapLocations } = require('../helpers/mapsLocations');
 
 /*
   fetchAndInsertWindyData structure PLEASE READ
@@ -23,7 +24,7 @@ const fetchAndInsertWindyData = async (req, res) => {
       model: "gfs",
       parameters: ["temp"],
       levels: ["surface"],
-      key: "RfmPqSUA1c49ZDDLdEZtufV4FwGjSifw",
+      key: process.env.WINDY_API_KEY,
     };
 
     // fetching data from Windy API
@@ -139,4 +140,46 @@ const getWindyDataForSevenDaysChart = (req, res) => {
   });
 };
 
-module.exports = { fetchAndInsertWindyData, getWindyDataForToday, getWindyDataForSevenDaysChart };
+const getWindyDataForMap = async (req, res) => {
+  try {
+    const windyAPIURL = "https://api.windy.com/api/point-forecast/v2";
+
+    const results = await Promise.all(
+      mapLocations.map(async (location) => {
+        const response = await axios.post(windyAPIURL,
+          {
+            lat: location.lat,
+            lon: location.lon,
+            model: "gfs",
+            parameters: ["temp"],
+            levels: ["surface"],
+            key: process.env.WINDY_API_KEY
+          }
+        );
+
+        if (response.status !== 200 || !response.data["temp-surface"]) {
+          return { ...location, temperature: null };
+        }
+
+        // convert from kelvin to celsius
+        const temperatures = response.data["temp-surface"].map(temp => temp - 273.15);
+        const avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
+
+        return {
+          name: location.name,
+          lat: location.lat,
+          lon: location.lon,
+          temperature: avgTemp.toFixed(2),             // avg temp in celsius
+          date: new Date().toISOString().split("T")[0] // current date
+        };
+      })
+    );
+
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching Windy data:", error);
+    res.status(500).json({ errMessage: error.message });
+  }
+};
+
+module.exports = { fetchAndInsertWindyData, getWindyDataForToday, getWindyDataForSevenDaysChart, getWindyDataForMap };

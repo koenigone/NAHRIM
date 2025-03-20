@@ -42,7 +42,7 @@ const NahrimMap = () => {
               ])
             )
         );
-        console.log("Sanitized CSV Data:", cleanedData);
+        // console.log("Sanitized CSV Data:", cleanedData);
         setCsvData(cleanedData as unknown as DataPoint[]);
       },
     });
@@ -57,12 +57,12 @@ const NahrimMap = () => {
           "0"
         )}-${String(d.Day).padStart(2, "0")}`;
         if (dataDate === formattedDate) return true;
-        console.log(`Skipping: ${dataDate} (Expected: ${formattedDate})`);
+        // console.log(`Skipping: ${dataDate} (Expected: ${formattedDate})`);
         return false;
       });
 
       setFilteredData(filtered);
-      console.log("Filtered Data:", filtered);
+      // console.log("Filtered Data:", filtered);
     }
   }, [selectedDate, csvData]);
 

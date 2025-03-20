@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { ChakraProvider, extendTheme, StyleFunctionProps } from "@chakra-ui/react";
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import Layout from './layout';
 import DataDashboard from "./dashboards/dataDashboard/dataDashboard";
 import MapsDashboard from "./dashboards/mapsDashboard/mapsDashboard";
@@ -26,7 +26,7 @@ function App() {
       <Toaster />
       <Routes>
         <Route path="/" element={<Layout><DataDashboard /></Layout>} />
-          <Route path="/maps" element={<Layout><MapsDashboard /></Layout>} />
+        <Route path="/maps" element={<Layout><MapsDashboard /></Layout>} />
       </Routes>
     </ChakraProvider>
   );

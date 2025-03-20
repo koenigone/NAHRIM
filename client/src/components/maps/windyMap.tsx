@@ -20,22 +20,24 @@ const WindyMap = () => {
   const [windyData, setWindyData] = useState<WindyDataPoint[]>([]);
 
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0]; // Get today's date (YYYY-MM-DD)
-
     const fetchWindyData = async () => {
       try {
-        const response = await fetch("/windyMapData"); // Update with your API route
+        const response = await fetch("http://localhost:3000/api/windyMapData");
+        if (!response.ok) {
+          // Log the full response for debugging
+          console.error("Response not OK:", response.status, response.statusText);
+          const text = await response.text();
+          console.error("Response text:", text);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        const filteredData = data.filter(
-          (d: WindyDataPoint) => d.date === today
-        );
-        console.log("Windy Data for Today:", filteredData);
-        setWindyData(filteredData);
+        console.log("Fetched Data:", data);
+        setWindyData(data);
       } catch (error) {
         console.error("Error fetching Windy data:", error);
       }
     };
-
+  
     fetchWindyData();
   }, []);
 

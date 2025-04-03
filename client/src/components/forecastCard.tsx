@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import forecastbgImg from "../assets/cloudbg.png";
-import { WindyData } from "./types";
+import { WindyData, OpenWeatherMapData } from "./types";
 import {
   Card,
   CardBody,
@@ -22,37 +22,66 @@ import {
   formatDate,
   formatDateFull,
 } from "./utils";
+import { useDataSource } from "../../context/dataSourceContext";
 
 const WeatherDashboard = () => {
+  const { dataSource } = useDataSource();
   const [loading, setLoading] = useState(true);
-  const [todayData, setTodayData] = useState<WindyData | null>(null);
-  const [weeklyData, setWeeklyData] = useState<WindyData[]>([]);
+  const [todayData, setTodayData] = useState<WindyData | OpenWeatherMapData | null>(null);
+  const [weeklyData, setWeeklyData] = useState<(WindyData | OpenWeatherMapData)[]>([]);
 
   useEffect(() => {
     const fetchChartData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/windyWeeklyData"
-        );
-        const windyTableData = response.data.data;
+        const endpoint = dataSource === "Windy"
+          ? "http://localhost:3000/api/windyWeeklyData"
+          : "http://localhost:3000/api/owmWeeklyData";
 
-        const today = new Date().toISOString().split("T")[0]; // get today
-        const todayData = windyTableData.find(
-          (data: WindyData) => data.Win_Date === today
+        const response = await axios.get(endpoint);
+        const tableData = response.data.data;
+
+        const today = new Date().toISOString().split("T")[0];
+        const todayData = tableData.find((data: any) => 
+          (dataSource === "Windy" ? data.Win_Date : data.OWM_Date) === today
         );
         setTodayData(todayData || null);
 
-        // filter data for Monday to Friday
-        setWeeklyData(windyTableData.slice(0, 5)); // First 5 days
+        // Get first 5 days (Monday-Friday)
+        setWeeklyData(tableData.slice(0, 5));
       } catch (error) {
-        toast.error("Error fetching chart forecast chart:" + error);
+        toast.error(`Error fetching ${dataSource} forecast data:` + error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchChartData();
-  }, []);
+  }, [dataSource]);
+
+  const getCurrentTemp = () => {
+    if (!todayData) return 0;
+    return dataSource === "Windy"
+      ? (todayData as WindyData).Win_Current
+      : (todayData as OpenWeatherMapData).OWM_Current;
+  };
+
+  const getDateField = (data: WindyData | OpenWeatherMapData) => {
+    return dataSource === "Windy"
+      ? (data as WindyData).Win_Date
+      : (data as OpenWeatherMapData).OWM_Date;
+  };
+
+  const getMinTemp = (data: WindyData | OpenWeatherMapData) => {
+    return dataSource === "Windy"
+      ? (data as WindyData).Win_Min
+      : (data as OpenWeatherMapData).OWM_Min;
+  };
+
+  const getMaxTemp = (data: WindyData | OpenWeatherMapData) => {
+    return dataSource === "Windy"
+      ? (data as WindyData).Win_Max
+      : (data as OpenWeatherMapData).OWM_Max;
+  };
 
   return (
     <Card
@@ -109,18 +138,18 @@ const WeatherDashboard = () => {
         ) : todayData ? (
           <Flex direction="column">
             <Text fontSize="2xl" fontWeight="bold" mb={4} textAlign="center">
-              {getMonthName(todayData.Win_Date)}
+              {getMonthName(getDateField(todayData))}
             </Text>
 
             <SimpleGrid columns={5} spacing={4} mb={4}>
               {weeklyData.map((data, index) => (
                 <Box key={index} textAlign="center">
                   <Text fontSize="sm" color="gray.500">
-                    {formatDate(data.Win_Date)}
+                    {formatDate(getDateField(data))}
                   </Text>
                   <Tooltip label="Average" bg="gray.500" hasArrow>
                     <Text fontSize="lg" fontWeight="bold">
-                      {calculateAverage(data.Win_Min, data.Win_Max)}°c
+                      {calculateAverage(getMinTemp(data), getMaxTemp(data))}°c
                     </Text>
                   </Tooltip>
                 </Box>
@@ -133,7 +162,7 @@ const WeatherDashboard = () => {
                   Penang
                 </Text>
                 <Text fontSize="4xl" fontWeight="bold" mt={2}>
-                  {todayData.Win_Current}°c
+                  {getCurrentTemp()}°c
                 </Text>
                 <Text fontSize="lg" color="gray.500" mt={2}>
                   Now
@@ -143,12 +172,12 @@ const WeatherDashboard = () => {
               <Box textAlign="right">
                 <Box mb={4}>
                   <Text fontSize="3xl" fontWeight="bold" color="gray.500">
-                    {formatDateFull(todayData.Win_Date)}
+                    {formatDateFull(getDateField(todayData))}
                   </Text>
                 </Box>
                 <Box>
                   <Text fontSize="lg" fontWeight="bold" color="gray.500">
-                    {getDayOfWeek(todayData.Win_Date)}
+                    {getDayOfWeek(getDateField(todayData))}
                   </Text>
                 </Box>
               </Box>

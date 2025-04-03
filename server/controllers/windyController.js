@@ -15,9 +15,9 @@ const { mapLocations } = require('../helpers/mapsLocations');
 const fetchAndInsertWindyData = async (req, res) => {
   const latitude = 5.285153;
   const longitude = 100.456238;
+  const windyAPIURL = "https://api.windy.com/api/point-forecast/v2";
 
   try {
-    const windyAPIURL = "https://api.windy.com/api/point-forecast/v2";
     const windyAPIRequestBody = {
       lat: latitude,
       lon: longitude,
@@ -87,8 +87,9 @@ const fetchAndInsertWindyData = async (req, res) => {
         const insertWindyDataQuery = `
           INSERT INTO Windy (Win_Date, Win_Min, Win_Max, Win_Current) 
           VALUES (?, ?, ?, ?)
-          ON CONFLICT(Win_Date) DO UPDATE 
-          SET Win_Min = excluded.Win_Min, 
+          ON CONFLICT(Win_Date) 
+          DO UPDATE SET 
+              Win_Min = excluded.Win_Min, 
               Win_Max = excluded.Win_Max,
               Win_Current = excluded.Win_Current;`;
 
@@ -128,7 +129,7 @@ const getWindyDataForToday = (req, res) => {
 const getWindyDataForSevenDaysChart = (req, res) => {
   const today = new Date().toISOString().split("T")[0];
   const sevenDaysLater = new Date();
-  sevenDaysLater.setDate(sevenDaysLater.getDate() + 6);
+  sevenDaysLater.setDate(sevenDaysLater.getDate() + 5);
 
   const getWindDataQuery = "SELECT * FROM Windy WHERE Win_Date BETWEEN ? AND ? ORDER BY Win_Date ASC;";
 

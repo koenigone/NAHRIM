@@ -48,3 +48,6 @@ export const formatDateFull = (dateString: string) => {
 
   return `${day}${suffix} ${month} ${year}`;
 };
+
+// format temperature with °C suffix
+export const formatTemp = (temp: number) => `${temp}°c`;

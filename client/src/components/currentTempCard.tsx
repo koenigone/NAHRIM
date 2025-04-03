@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { WindyData } from "./types";
+import { WindyData, OpenWeatherMapData } from "./types";
 import {
   Card,
   CardBody,
@@ -15,134 +15,104 @@ import {
 } from "@chakra-ui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTemperature1 } from "@fortawesome/free-solid-svg-icons";
-import { calculateAverage } from "./utils";
+import { calculateAverage, formatTemp } from "./utils";
+import { useDataSource } from "../../context/dataSourceContext";
 
 const CurrentTempCard = () => {
+  const { dataSource } = useDataSource();
   const [loading, setLoading] = useState(true);
-  const [todayData, setTodayData] = useState<WindyData | null>(null);
+  const [todayData, setTodayData] = useState<WindyData | OpenWeatherMapData | null>(null);
 
   useEffect(() => {
-    const fetchChartData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/windyDailyData"
-        );
-        const windyTableData = response.data.data;
-
-        if (windyTableData.length > 0) {
-          setTodayData(windyTableData[0]);
-        }
+        const endpoint = dataSource === "OpenWeatherMap" 
+          ? "http://localhost:3000/api/owmDailyData" 
+          : "http://localhost:3000/api/windyDailyData";
+        
+        const { data } = await axios.get(endpoint);
+        if (data?.data?.length) setTodayData(data.data[0]);
       } catch (error) {
-        toast.error("Error fetching today's data" + error);
+        toast.error(`Error fetching ${dataSource} data`);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchChartData();
-  }, []);
+    fetchData();
+  }, [dataSource]);
 
   const getTemperatureColor = (temp: number) => {
-    const maxTemp = 50;
-    const ratio = temp / maxTemp;
-    const red = Math.round(255 * ratio);
-    const green = Math.round(255 * (1 - ratio));
-    return `rgb(${red}, ${green}, 0)`;
+    const ratio = Math.min(temp / 50, 1);
+    return `rgb(${Math.round(255 * ratio)}, ${Math.round(255 * (1 - ratio))}, 0)`;
   };
 
-  return (
-    <Card
-      bg="gray.800"
-      color="gray.500"
-      p={6}
-      boxShadow="md"
-      borderRadius="2xl"
-      maxWidth="700"
-      height="319"
-      position="relative"
-      overflow="hidden"
+  const getTemps = () => {
+    if (!todayData) return { min: 0, max: 0, avg: 0 };
+    
+    if (dataSource === "Windy") {
+      const { Win_Min: min, Win_Max: max } = todayData as WindyData;
+      return { min, max, avg: calculateAverage(min, max) };
+    } else {
+      const { OWM_Min: min, OWM_Max: max } = todayData as OpenWeatherMapData;
+      return { min, max, avg: calculateAverage(min, max) };
+    }
+  };
+
+  const renderTempCircle = (value: number, label: string, size = "3xl") => (
+    <CircularProgress
+      value={(value / 50) * 100}
+      size="170px"
+      thickness="8px"
+      trackColor="transparent"
+      color={getTemperatureColor(value)}
     >
-      <CardBody>
-        {loading ? (
-          <Flex direction="column" align="center" justify="center">
-            <Skeleton height="24px" width="120px" mb={4} />
-            <Flex mt={4} justify="space-between" width="100%">
-              <Flex direction="column" align="center">
-                <SkeletonCircle size="170px" />
-                <Skeleton height="18px" width="50px" mt={2} />
-              </Flex>
-              <Flex direction="column" align="center">
-                <SkeletonCircle size="170px" />
-                <Skeleton height="18px" width="50px" mt={2} />
-              </Flex>
-              <Flex direction="column" align="center">
-                <SkeletonCircle size="170px" />
-                <Skeleton height="18px" width="50px" mt={2} />
-              </Flex>
-            </Flex>
+      <CircularProgressLabel>
+        <Text fontSize={size} fontWeight="bold">
+          {formatTemp(value)}
+        </Text>
+        <Text fontSize="sm" color="gray.500">
+          {label}
+        </Text>
+      </CircularProgressLabel>
+    </CircularProgress>
+  );
+
+  const renderSkeleton = () => (
+    <Flex direction="column" align="center" justify="center">
+      <Skeleton height="24px" width="120px" mb={4} />
+      <Flex mt={4} justify="space-between" width="100%">
+        {[...Array(3)].map((_, i) => (
+          <Flex key={i} direction="column" align="center">
+            <SkeletonCircle size="170px" />
+            <Skeleton height="18px" width="50px" mt={2} />
           </Flex>
-        ) : todayData ? (
+        ))}
+      </Flex>
+    </Flex>
+  );
+
+  if (loading) return renderSkeleton();
+
+  const { min, max, avg } = getTemps();
+
+  return (
+    <Card bg="gray.800" color="gray.500" p={6} boxShadow="md" borderRadius="2xl" maxWidth="700" height="319">
+      <CardBody>
+        {todayData ? (
           <Flex direction="column" align="center" justify="center">
             <Text fontSize="2xl" fontWeight="bold" mb={4}>
-              <FontAwesomeIcon icon={faTemperature1} /> Today
+              <FontAwesomeIcon icon={faTemperature1} /> Today ({dataSource})
             </Text>
             <Flex mt={4} justify="space-between" width="100%">
               <Flex direction="column" align="center">
-                <CircularProgress
-                  value={(todayData.Win_Min / 50) * 100}
-                  size="170px"
-                  thickness="8px"
-                  trackColor="transparent"
-                  color={getTemperatureColor(todayData.Win_Min)}
-                >
-                  <CircularProgressLabel>
-                    <Text fontSize="3xl" fontWeight="bold">
-                      {todayData.Win_Min}°c
-                    </Text>
-                    <Text fontSize="sm" color="gray.500">
-                      Min
-                    </Text>
-                  </CircularProgressLabel>
-                </CircularProgress>
+                {renderTempCircle(min, "Min")}
               </Flex>
               <Flex direction="column" align="center">
-                <CircularProgress
-                  value={(todayData.Win_Max / 50) * 100}
-                  size="170px"
-                  thickness="8px"
-                  trackColor="transparent"
-                  color={getTemperatureColor(todayData.Win_Max)}
-                >
-                  <CircularProgressLabel>
-                    <Text fontSize="4xl" fontWeight="bold">
-                      {todayData.Win_Max}°c
-                    </Text>
-                    <Text fontSize="sm" color="gray.500">
-                      Max
-                    </Text>
-                  </CircularProgressLabel>
-                </CircularProgress>
+                {renderTempCircle(max, "Max", "4xl")}
               </Flex>
               <Flex direction="column" align="center">
-                <CircularProgress
-                  value={
-                  (calculateAverage(todayData.Win_Min, todayData.Win_Max) / 50) * 100}
-                  size="170px"
-                  thickness="8px"
-                  trackColor="transparent"
-                  color={getTemperatureColor(
-                    calculateAverage(todayData.Win_Min, todayData.Win_Max)
-                  )}
-                >
-                  <CircularProgressLabel>
-                    <Text fontSize="3xl" fontWeight="bold">
-                      {calculateAverage(todayData.Win_Min, todayData.Win_Max)}°c
-                    </Text>
-                    <Text fontSize="sm" color="gray.500">
-                      Avg
-                    </Text>
-                  </CircularProgressLabel>
-                </CircularProgress>
+                {renderTempCircle(avg, "Avg")}
               </Flex>
             </Flex>
           </Flex>

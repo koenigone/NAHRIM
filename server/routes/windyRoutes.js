@@ -1,10 +1,10 @@
 const express = require('express');
-const router = express.Router();
+const windyRouter = express.Router();
 const windyController = require('../controllers/windyController');
 
-router.post('/fetch-and-insert', windyController.fetchAndInsertWindyData);
-router.get('/windyDailyData', windyController.getWindyDataForToday);
-router.get('/windyWeeklyData', windyController.getWindyDataForSevenDaysChart);
-router.get('/windyMapData', windyController.getWindyDataForMap);
+windyRouter.post('/insertWindyData', windyController.fetchAndInsertWindyData);
+windyRouter.get('/windyDailyData', windyController.getWindyDataForToday);
+windyRouter.get('/windyWeeklyData', windyController.getWindyDataForSevenDaysChart);
+windyRouter.get('/windyMapData', windyController.getWindyDataForMap);
 
-module.exports = router;
+module.exports = windyRouter;

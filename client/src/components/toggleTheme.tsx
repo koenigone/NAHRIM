@@ -17,7 +17,7 @@ const ToggleTheme = () => {
               <FontAwesomeIcon
                 icon={faMoon}
                 fontSize={30}
-                color="rgba(0, 0, 0, 0.6)"
+                color="rgba(224, 224, 224, 1)"
               />
             ) : (
               <FontAwesomeIcon

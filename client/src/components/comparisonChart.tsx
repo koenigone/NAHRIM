@@ -10,14 +10,13 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Card, CardBody, useColorModeValue } from "@chakra-ui/react";
+import { Card, CardBody } from "@chakra-ui/react";
 import toast from "react-hot-toast";
 import { calculateAverage } from "./utils";
 import { useDataSource } from "../../context/dataSourceContext";
 
 const ComparisonChart = () => {
   const [data, setData] = useState<any[]>([]);
-  const gridColor = useColorModeValue("#e2e8f0", "#2d3748");
   const { dataSource } = useDataSource();
 
   useEffect(() => {
@@ -36,7 +35,7 @@ const ComparisonChart = () => {
         if (windyData.length > 0 && owmData.length > 0) {
           const windyToday = windyData[0];
           const owmToday = owmData[0];
-          
+
           const chartData = [
             {
               name: "Windy.com",
@@ -66,7 +65,9 @@ const ComparisonChart = () => {
 
   return (
     <Card
-      bg="gray.800"
+      bg="rgba(0, 0, 0, 0.4)"
+      backdropFilter="blur(10px)"
+      color="whiteAlpha.800"
       p={6}
       boxShadow="md"
       borderRadius="2xl"
@@ -79,14 +80,14 @@ const ComparisonChart = () => {
             data={data}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
-            <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="name" 
-              tickLine={false} 
+            <CartesianGrid stroke="rgba(250, 250, 250, 0.3)" strokeDasharray="3 3" />
+            <XAxis
+              dataKey="name"
+              tickLine={false}
               axisLine={false}
             />
-            <YAxis 
-              tickLine={false} 
+            <YAxis
+              tickLine={false}
               axisLine={false}
               domain={[0, 'dataMax + 5']}
             />
@@ -102,22 +103,22 @@ const ComparisonChart = () => {
               labelFormatter={(label) => `Source: ${label}`}
             />
             <Legend />
-            <Bar 
-              dataKey="min" 
-              fill="#4fd1c5" 
-              name="Min" 
+            <Bar
+              dataKey="min"
+              fill="#4fd1c5"
+              name="Min"
               radius={[4, 4, 0, 0]}
             />
-            <Bar 
-              dataKey="max" 
-              fill="#f56565" 
-              name="Max" 
+            <Bar
+              dataKey="max"
+              fill="#f56565"
+              name="Max"
               radius={[4, 4, 0, 0]}
             />
-            <Bar 
-              dataKey="average" 
-              fill="#79c0ea" 
-              name="Avg" 
+            <Bar
+              dataKey="average"
+              fill="#79c0ea"
+              name="Avg"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

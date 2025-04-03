@@ -97,32 +97,41 @@ const CurrentTempCard = () => {
   const { min, max, avg } = getTemps();
 
   return (
-    <Card bg="gray.800" color="gray.500" p={6} boxShadow="md" borderRadius="2xl" maxWidth="700" height="319">
-      <CardBody>
-        {todayData ? (
-          <Flex direction="column" align="center" justify="center">
-            <Text fontSize="2xl" fontWeight="bold" mb={4}>
-              <FontAwesomeIcon icon={faTemperature1} /> Today ({dataSource})
-            </Text>
-            <Flex mt={4} justify="space-between" width="100%">
-              <Flex direction="column" align="center">
-                {renderTempCircle(min, "Min")}
-              </Flex>
-              <Flex direction="column" align="center">
-                {renderTempCircle(max, "Max", "4xl")}
-              </Flex>
-              <Flex direction="column" align="center">
-                {renderTempCircle(avg, "Avg")}
-              </Flex>
-            </Flex>
+<Card 
+  bg="rgba(0, 0, 0, 0.4)"
+  backdropFilter="blur(10px)"
+  color="whiteAlpha.800"
+  p={6} 
+  boxShadow="md" 
+  borderRadius="2xl" 
+  maxWidth="700" 
+  height="319"
+>
+  <CardBody>
+    {todayData ? (
+      <Flex direction="column" align="center" justify="center">
+        <Text fontSize="2xl" fontWeight="bold" mb={4}>
+          <FontAwesomeIcon icon={faTemperature1} /> Today ({dataSource})
+        </Text>
+        <Flex mt={4} justify="space-between" width="100%">
+          <Flex direction="column" align="center">
+            {renderTempCircle(min, "Min")}
           </Flex>
-        ) : (
-          <Center>
-            <Text>No data available for today</Text>
-          </Center>
-        )}
-      </CardBody>
-    </Card>
+          <Flex direction="column" align="center">
+            {renderTempCircle(max, "Max", "4xl")}
+          </Flex>
+          <Flex direction="column" align="center">
+            {renderTempCircle(avg, "Avg")}
+          </Flex>
+        </Flex>
+      </Flex>
+    ) : (
+      <Center>
+        <Text color="gray.300">No data available for today</Text>
+      </Center>
+    )}
+  </CardBody>
+</Card>
   );
 };
 

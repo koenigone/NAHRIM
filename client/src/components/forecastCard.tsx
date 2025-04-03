@@ -41,7 +41,7 @@ const WeatherDashboard = () => {
         const tableData = response.data.data;
 
         const today = new Date().toISOString().split("T")[0];
-        const todayData = tableData.find((data: any) => 
+        const todayData = tableData.find((data: any) =>
           (dataSource === "Windy" ? data.Win_Date : data.OWM_Date) === today
         );
         setTodayData(todayData || null);
@@ -85,9 +85,10 @@ const WeatherDashboard = () => {
 
   return (
     <Card
-      bg="gray.800"
+      bg="rgba(0, 0, 0, 0.4)"
+      backdropFilter="blur(10px)"
+      color="whiteAlpha.800"
       p={6}
-      color="gray.500"
       boxShadow="md"
       borderRadius="2xl"
       maxWidth="700"
@@ -144,7 +145,7 @@ const WeatherDashboard = () => {
             <SimpleGrid columns={5} spacing={4} mb={4}>
               {weeklyData.map((data, index) => (
                 <Box key={index} textAlign="center">
-                  <Text fontSize="sm" color="gray.500">
+                  <Text fontSize="sm">
                     {formatDate(getDateField(data))}
                   </Text>
                   <Tooltip label="Average" bg="gray.500" hasArrow>
@@ -171,12 +172,12 @@ const WeatherDashboard = () => {
 
               <Box textAlign="right">
                 <Box mb={4}>
-                  <Text fontSize="3xl" fontWeight="bold" color="gray.500">
+                  <Text fontSize="3xl" fontWeight="bold">
                     {formatDateFull(getDateField(todayData))}
                   </Text>
                 </Box>
                 <Box>
-                  <Text fontSize="lg" fontWeight="bold" color="gray.500">
+                  <Text fontSize="lg" fontWeight="bold">
                     {getDayOfWeek(getDateField(todayData))}
                   </Text>
                 </Box>

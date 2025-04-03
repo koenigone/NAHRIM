@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { WindyData, OpenWeatherMapData } from "./types";
-import { Card, CardBody, useColorModeValue } from "@chakra-ui/react";
+import { Card, CardBody } from "@chakra-ui/react";
 import {
   LineChart,
   Line,
@@ -19,7 +19,6 @@ import { useDataSource } from "../../context/dataSourceContext";
 const TemperatureChart = () => {
   const { dataSource } = useDataSource();
   const [chartData, setChartData] = useState<any[]>([]);
-  const gridColor = useColorModeValue("#e2e8f0", "#2d3748");
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -65,8 +64,10 @@ const TemperatureChart = () => {
 
   return (
     <Card
-      bg="gray.800"
       p={6}
+      bg="rgba(0, 0, 0, 0.4)"
+      backdropFilter="blur(10px)"
+      color="whiteAlpha.800"
       boxShadow="md"
       borderRadius="2xl"
       maxWidth="700"
@@ -78,7 +79,7 @@ const TemperatureChart = () => {
             data={chartData}
             margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
           >
-            <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
+            <CartesianGrid stroke="rgba(250, 250, 250, 0.3)" strokeDasharray="3 3" />
             <XAxis 
               dataKey="day" 
               tickLine={false} 
@@ -95,7 +96,6 @@ const TemperatureChart = () => {
                 backgroundColor: "#2D2D2D",
                 border: "none",
                 borderRadius: "5px",
-                color: "#E0E0E0",
               }}
               formatter={(value: number, name: string) => [
                 `${value}°c`,

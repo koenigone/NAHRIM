@@ -14,8 +14,10 @@ const theme = extendTheme({
   styles: {
     global: (props: StyleFunctionProps) => ({
       body: {
-        bg: props.colorMode === 'light' ? '#FCFCFC' : '#121212',
-        color: props.colorMode === 'light' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(224, 224, 224, 0.7)',
+        bg: props.colorMode === 'light' 
+        ? 'linear-gradient(160deg, #0093E9 0%, #80D0C7 100%)' 
+        : '#121212',
+        color: props.colorMode === 'light' ? 'white' : 'rgba(224, 224, 224, 0.7)',
       },
     }),
   },

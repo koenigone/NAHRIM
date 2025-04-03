@@ -38,9 +38,9 @@ const fetchAndInsertOWMData = async (req, res) => {
 
     for (const date in temperatureData) {
       const temps = temperatureData[date];
-      const minTemp = Math.round(Math.min(...temps));
-      const maxTemp = Math.round(Math.max(...temps));
-      const currentTemp = Math.round(temps[temps.length - 1]); // Most recent temp
+      const minTemp = Math.round(Math.min(...temps));          // min temp
+      const maxTemp = Math.round(Math.max(...temps));          // max temp
+      const currentTemp = Math.round(temps[temps.length - 1]); // current temp
 
       const selectSql = `SELECT OWM_Min, OWM_Max FROM OpenWeatherMap WHERE OWM_Date = ?`;
       db.get(selectSql, [date], (err, dataRow) => {

@@ -62,6 +62,17 @@ const Header = () => {
           mr={4} 
           width={150}
           value={dataSource}
+          color="whiteAlpha.800"
+          sx={{
+            "& > option": {
+              background: "gray.700",
+              color: "white",
+            },
+            "& > option:hover": {
+              background: "gray.600 !important",
+            },
+          }}
+          bg="transparent"
           onChange={handleDataSourceChange}
         >
           <option value="METMalaysia">METMalaysia</option>

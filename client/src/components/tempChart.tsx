@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { WindyData, OpenWeatherMapData } from "./types";
+import { WindyData, OpenWeatherMapData, METMalaysiaData } from "./types";
 import { Card, CardBody } from "@chakra-ui/react";
 import {
   LineChart,
@@ -23,36 +23,61 @@ const TemperatureChart = () => {
   useEffect(() => {
     const fetchChartData = async () => {
       try {
-        const endpoint = dataSource === "Windy" 
-          ? "http://localhost:3000/api/windyWeeklyData" 
-          : "http://localhost:3000/api/owmWeeklyData";
+        let endpoint = "";
+        switch (dataSource) {
+          case "Windy":
+            endpoint = "http://localhost:3000/api/windyWeeklyData";
+            break;
+          case "OpenWeatherMap":
+            endpoint = "http://localhost:3000/api/owmWeeklyData";
+            break;
+          case "METMalaysia":
+            endpoint = "http://localhost:3000/api/mmWeeklyData";
+            break;
+          default:
+            endpoint = "http://localhost:3000/api/windyWeeklyData";
+        }
 
         const response = await axios.get(endpoint);
         const weeklyData = response.data.data;
 
-        const transformedChartData = weeklyData.map((item: WindyData | OpenWeatherMapData) => {
-          const dbDate = dataSource === "Windy" 
-            ? (item as WindyData).Win_Date 
-            : (item as OpenWeatherMapData).OWM_Date;
+        const transformedChartData = weeklyData.map(
+          (item: WindyData | OpenWeatherMapData | METMalaysiaData) => {
+            let dbDate, minTemp, maxTemp;
 
-          // Get temperatures from the correct fields
-          const minTemp = dataSource === "Windy" 
-            ? (item as WindyData).Win_Min 
-            : (item as OpenWeatherMapData).OWM_Min;
-          const maxTemp = dataSource === "Windy" 
-            ? (item as WindyData).Win_Max 
-            : (item as OpenWeatherMapData).OWM_Max;
+            switch (dataSource) {
+              case "Windy":
+                dbDate = (item as WindyData).Win_Date;
+                minTemp = (item as WindyData).Win_Min;
+                maxTemp = (item as WindyData).Win_Max;
+                break;
+              case "OpenWeatherMap":
+                dbDate = (item as OpenWeatherMapData).OWM_Date;
+                minTemp = (item as OpenWeatherMapData).OWM_Min;
+                maxTemp = (item as OpenWeatherMapData).OWM_Max;
+                break;
+              case "METMalaysia":
+                dbDate = (item as METMalaysiaData).MM_Date;
+                minTemp = (item as METMalaysiaData).MM_Min;
+                maxTemp = (item as METMalaysiaData).MM_Max;
+                break;
+              default:
+                dbDate = (item as WindyData).Win_Date;
+                minTemp = (item as WindyData).Win_Min;
+                maxTemp = (item as WindyData).Win_Max;
+            }
 
-          return {
-            date: dbDate,
-            day: getDayOfWeek(dbDate).substring(0, 3),
-            formattedDate: formatDate(dbDate),
-            min: minTemp,
-            max: maxTemp,
-            avg: calculateAverage(minTemp, maxTemp),
-          };
-        });
-        
+            return {
+              date: dbDate,
+              day: getDayOfWeek(dbDate).substring(0, 3),
+              formattedDate: formatDate(dbDate),
+              min: minTemp,
+              max: maxTemp,
+              avg: calculateAverage(minTemp, maxTemp),
+            };
+          }
+        );
+
         setChartData(transformedChartData);
       } catch (error) {
         toast.error(`Error fetching ${dataSource} weekly data: ${error}`);
@@ -64,14 +89,14 @@ const TemperatureChart = () => {
 
   return (
     <Card
-      p={6}
-      bg="rgba(0, 0, 0, 0.4)"
+      bg="rgba(0, 0, 0, 0.49)"
       backdropFilter="blur(10px)"
       color="whiteAlpha.800"
-      boxShadow="md"
-      borderRadius="2xl"
+      p={6}
+      boxShadow="0 4px 20px rgba(0,0,0,0.1)"
+      borderRadius="16px"
       maxWidth="700"
-      maxHeight="319"
+      height="319"
     >
       <CardBody>
         <ResponsiveContainer width="100%" height={250}>
@@ -79,17 +104,28 @@ const TemperatureChart = () => {
             data={chartData}
             margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
           >
-            <CartesianGrid stroke="rgba(250, 250, 250, 0.3)" strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="day" 
-              tickLine={false} 
+            <CartesianGrid
+              stroke="rgba(250, 250, 250, 0.3)"
+              strokeDasharray="3 3"
+            />
+            <XAxis
+              dataKey="day"
+              tickLine={false}
               axisLine={false}
+              tick={{
+                fill: "rgba(255, 255, 255, 0.8)",
+                fontSize: 12,
+              }}
             />
             <YAxis
               unit="°C"
               tickLine={false}
               axisLine={false}
               domain={[0, 40]}
+              tick={{
+                fill: "rgba(255, 255, 255, 0.8)",
+                fontSize: 12,
+              }}
             />
             <Tooltip
               contentStyle={{
@@ -99,10 +135,10 @@ const TemperatureChart = () => {
               }}
               formatter={(value: number, name: string) => [
                 `${value}°c`,
-                name.replace(' Temp', '')
+                name.replace(" Temp", ""),
               ]}
               labelFormatter={(label) => {
-                const item = chartData.find(d => d.day === label);
+                const item = chartData.find((d) => d.day === label);
                 return item ? `${item.day}, ${item.formattedDate}` : label;
               }}
             />
@@ -113,16 +149,16 @@ const TemperatureChart = () => {
               name="Min"
               stroke="#3dad35"
               strokeWidth={3}
-              dot={{ r: 5, fill: "#1874bb" }}
+              dot={{ r: 5, fill: "#3dad35" }}
               activeDot={{ r: 8 }}
             />
             <Line
               type="monotone"
               dataKey="max"
               name="Max"
-              stroke="#1874bb"
+              stroke="#78c1ea"
               strokeWidth={3}
-              dot={{ r: 5, fill: "#3dad35" }}
+              dot={{ r: 5, fill: "#78c1ea" }}
               activeDot={{ r: 8 }}
             />
             <Line
@@ -131,7 +167,7 @@ const TemperatureChart = () => {
               name="Avg"
               stroke="#94c122"
               strokeWidth={3}
-              dot={{ r: 5, fill: "#1874bb" }}
+              dot={{ r: 5, fill: "#94c122" }}
               activeDot={{ r: 8 }}
             />
           </LineChart>

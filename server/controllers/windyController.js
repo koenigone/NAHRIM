@@ -178,7 +178,6 @@ const getWindyDataForMap = async (req, res) => {
 
     res.json(results);
   } catch (error) {
-    console.error("Error fetching Windy data:", error);
     res.status(500).json({ errMessage: error.message });
   }
 };

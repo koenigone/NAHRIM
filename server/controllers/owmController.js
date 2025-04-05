@@ -3,6 +3,15 @@ const axios = require("axios");
 const cron = require('node-cron');
 const { mapLocations } = require('../helpers/mapsLocations');
 
+/*
+  fetchAndInsertOWMData structure PLEASE READ
+  Penang's latitude and longitue
+  API usage and data extraction
+  data standardizing (timestamps, temps conversion etc..)
+  inserting standardized data in the table
+
+  with loads of error handling in between
+*/
 const fetchAndInsertOWMData = async (req, res) => {
   const latitude = 5.285153;
   const longitude = 100.456238;
@@ -21,8 +30,8 @@ const fetchAndInsertOWMData = async (req, res) => {
     const sevenDaysLater = new Date(currentDate);
     sevenDaysLater.setDate(currentDate.getDate() + 7);
 
-    // Process data exactly like Windy
     let temperatureData = {};
+
     owmWeatherData.list.forEach(forecast => {
       const date = new Date(forecast.dt * 1000);
       if (date >= currentDate && date <= sevenDaysLater) {
@@ -32,19 +41,23 @@ const fetchAndInsertOWMData = async (req, res) => {
         if (!temperatureData[dateString]) {
           temperatureData[dateString] = [];
         }
+
         temperatureData[dateString].push(tempCelsius);
       }
     });
 
+    // loop through each date and insert/update database
     for (const date in temperatureData) {
       const temps = temperatureData[date];
-      const minTemp = Math.round(Math.min(...temps));          // min temp
-      const maxTemp = Math.round(Math.max(...temps));          // max temp
-      const currentTemp = Math.round(temps[temps.length - 1]); // current temp
+      const minTemp = Math.round(Math.min(...temps));
+      const maxTemp = Math.round(Math.max(...temps));
+      const currentTemp = Math.round(temps[temps.length - 1]);
 
-      const selectSql = `SELECT OWM_Min, OWM_Max FROM OpenWeatherMap WHERE OWM_Date = ?`;
+      const selectSql = `SELECT OWM_Min, OWM_Max, OWM_Current FROM OpenWeatherMap WHERE OWM_Date = ?`;
       db.get(selectSql, [date], (err, dataRow) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
 
         let finalMinTemp = minTemp;
         let finalMaxTemp = maxTemp;
@@ -66,13 +79,15 @@ const fetchAndInsertOWMData = async (req, res) => {
             OWM_Current = excluded.OWM_Current`;
 
         db.run(upsertSql, [date, finalMinTemp, finalMaxTemp, finalCurrentTemp], (err) => {
-          if (err) return res.status(500).json({ error: err.message });
+          if (err) {
+            res.status(500).json({ error: err.message });
+          }
         });
       });
     }
+
     res.json({ message: "OpenWeatherMap data inserted" });
   } catch (error) {
-    console.error("Error in fetchAndInsertOWMData:", error);
     res.status(500).json({ errMessage: error.message });
   }
 };
@@ -145,7 +160,6 @@ const getOWMDataForMap = async (req, res) => {
             date: new Date().toISOString().split("T")[0]
           };
         } catch (error) {
-          console.error(`Error fetching OWM data for ${location.name}:`, error.message);
           return {
             name: location.name,
             lat: location.lat,
@@ -161,7 +175,6 @@ const getOWMDataForMap = async (req, res) => {
 
     res.json(results);
   } catch (error) {
-    console.error("Error in getOWMDataForMap:", error);
     res.status(500).json({ errMessage: error.message });
   }
 };

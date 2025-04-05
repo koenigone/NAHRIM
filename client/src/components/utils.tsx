@@ -51,3 +51,7 @@ export const formatDateFull = (dateString: string) => {
 
 // format temperature with °C suffix
 export const formatTemp = (temp: number) => `${temp}°c`;
+
+export const getColor = (temp: number) => {
+  return temp > 28 ? "#C43031" : temp > 26 ? "#EFCE11" : "#3FAA37";
+};

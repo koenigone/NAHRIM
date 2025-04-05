@@ -7,7 +7,9 @@ import {
   Tooltip,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { getColor } from "../utils";
 import { Text, Flex } from "@chakra-ui/react";
+import toast from "react-hot-toast";
 
 interface WindyDataPoint {
   lat: number;
@@ -19,31 +21,26 @@ interface WindyDataPoint {
 const WindyMap = () => {
   const [windyData, setWindyData] = useState<WindyDataPoint[]>([]);
 
-  useEffect(() => {
+  useEffect(() => { // retrieve map data from backend
     const fetchWindyData = async () => {
       try {
         const response = await fetch("http://localhost:3000/api/windyMapData");
         if (!response.ok) {
-          // Log the full response for debugging
-          console.error("Response not OK:", response.status, response.statusText);
-          const text = await response.text();
-          console.error("Response text:", text);
-          throw new Error(`HTTP error! status: ${response.status}`);
+          toast.error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log("Fetched Data:", data);
-        setWindyData(data);
+        if (Array.isArray(data)) {
+          setWindyData(data);
+        } else {
+          throw new Error("Expected array but got different data format");
+        }
       } catch (error) {
-        console.error("Error fetching Windy data:", error);
+        toast.error("Error fetching Windy data");
       }
     };
   
     fetchWindyData();
   }, []);
-
-  const getColor = (temp: number) => {
-    return temp > 28 ? "#C43031" : temp > 26 ? "#EFCE11" : "#3FAA37";
-  };
 
   return (
     <>

@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { getColor } from "../utils";
 import { Select, Text, Flex } from "@chakra-ui/react";
 
 interface DataPoint {
@@ -24,25 +25,20 @@ const NahrimMap = () => {
   const [filteredData, setFilteredData] = useState<DataPoint[]>([]);
   const [csvData, setCsvData] = useState<DataPoint[]>([]);
 
-  useEffect(() => {
+  useEffect(() => { // load and parse CSV file
     Papa.parse("/src/data/Temp_PP_aveRCP_MacApr_2025_2030.csv", {
-      // Load and parse CSV file
       download: true,
       header: true,
       dynamicTyping: true,
       complete: (result) => {
-        const cleanedData = result.data.map(
-          (
-            row: any // sanitize keys
-          ) =>
-            Object.fromEntries(
-              Object.entries(row).map(([key, value]) => [
-                key.trim().replace(/\./g, "_"),
-                value,
-              ])
-            )
+        const cleanedData = result.data.map((row: any) =>
+          Object.fromEntries(
+            Object.entries(row).map(([key, value]) => [
+              key.trim().replace(/\./g, "_"),
+              value,
+            ])
+          )
         );
-        // console.log("Sanitized CSV Data:", cleanedData);
         setCsvData(cleanedData as unknown as DataPoint[]);
       },
     });
@@ -52,17 +48,14 @@ const NahrimMap = () => {
     if (csvData.length > 0) {
       const formattedDate = selectedDate.trim();
       const filtered = csvData.filter((d) => {
-        const dataDate = `${d.Year}-${String(d.Month).padStart(
-          2,
-          "0"
-        )}-${String(d.Day).padStart(2, "0")}`;
-        if (dataDate === formattedDate) return true;
-        // console.log(`Skipping: ${dataDate} (Expected: ${formattedDate})`);
+        const dataDate = `${d.Year}-${String(d.Month).padStart(2, "0")}-${String(d.Day).padStart(2, "0")}`;
+        if (dataDate === formattedDate) {
+          return true;
+        }
         return false;
       });
 
       setFilteredData(filtered);
-      // console.log("Filtered Data:", filtered);
     }
   }, [selectedDate, csvData]);
 
@@ -70,19 +63,10 @@ const NahrimMap = () => {
   const dates = Array.from(
     new Set(
       csvData
-        .filter((d) => d.Year && d.Month && d.Day) // Ensure data exists
-        .map(
-          (d) =>
-            `${d.Year}-${String(d.Month).padStart(2, "0")}-${String(
-              d.Day
-            ).padStart(2, "0")}`
-        )
+        .filter((d) => d.Year && d.Month && d.Day) // make sure data exists within the file
+        .map((d) => `${d.Year}-${String(d.Month).padStart(2, "0")}-${String(d.Day).padStart(2, "0")}`)
     )
   );
-
-  const getColor = (temp: number) => {
-    return temp > 28 ? "#C43031" : temp > 26 ? "#EFCE11" : "#3FAA37";
-  };
 
   return (
     <>
@@ -96,6 +80,16 @@ const NahrimMap = () => {
           onChange={(e) => setSelectedDate(e.target.value)}
           value={selectedDate}
           width={200}
+          color="gray.400"
+          sx={{
+            "& > option": {
+              background: "gray.700",
+              color: "white",
+            },
+            "& > option:hover": {
+              background: "gray.600 !important",
+            },
+          }}
           aria-label="Select date"
         >
           {dates.map((date) => (

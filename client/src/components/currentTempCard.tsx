@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { WindyData, OpenWeatherMapData } from "./types";
+import { WindyData, OpenWeatherMapData, METMalaysiaData } from "./types";
 import {
   Card,
   CardBody,
@@ -21,15 +21,28 @@ import { useDataSource } from "../../context/dataSourceContext";
 const CurrentTempCard = () => {
   const { dataSource } = useDataSource();
   const [loading, setLoading] = useState(true);
-  const [todayData, setTodayData] = useState<WindyData | OpenWeatherMapData | null>(null);
+  const [todayData, setTodayData] = useState<
+    WindyData | OpenWeatherMapData | METMalaysiaData | null
+  >(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const endpoint = dataSource === "OpenWeatherMap" 
-          ? "http://localhost:3000/api/owmDailyData" 
-          : "http://localhost:3000/api/windyDailyData";
-        
+        let endpoint = "";
+        switch (dataSource) {
+          case "Windy":
+            endpoint = "http://localhost:3000/api/windyDailyData";
+            break;
+          case "OpenWeatherMap":
+            endpoint = "http://localhost:3000/api/owmDailyData";
+            break;
+          case "METMalaysia":
+            endpoint = "http://localhost:3000/api/mmDailyData";
+            break;
+          default:
+            endpoint = "http://localhost:3000/api/windyDailyData";
+        }
+
         const { data } = await axios.get(endpoint);
         if (data?.data?.length) setTodayData(data.data[0]);
       } catch (error) {
@@ -49,13 +62,31 @@ const CurrentTempCard = () => {
 
   const getTemps = () => {
     if (!todayData) return { min: 0, max: 0, avg: 0 };
-    
-    if (dataSource === "Windy") {
-      const { Win_Min: min, Win_Max: max } = todayData as WindyData;
-      return { min, max, avg: calculateAverage(min, max) };
-    } else {
-      const { OWM_Min: min, OWM_Max: max } = todayData as OpenWeatherMapData;
-      return { min, max, avg: calculateAverage(min, max) };
+
+    switch (dataSource) {
+      case "Windy":
+        const windyData = todayData as WindyData;
+        return {
+          min: windyData.Win_Min,
+          max: windyData.Win_Max,
+          avg: calculateAverage(windyData.Win_Min, windyData.Win_Max),
+        };
+      case "OpenWeatherMap":
+        const owmData = todayData as OpenWeatherMapData;
+        return {
+          min: owmData.OWM_Min,
+          max: owmData.OWM_Max,
+          avg: calculateAverage(owmData.OWM_Min, owmData.OWM_Max),
+        };
+      case "METMalaysia":
+        const mmData = todayData as METMalaysiaData;
+        return {
+          min: mmData.MM_Min,
+          max: mmData.MM_Max,
+          avg: calculateAverage(mmData.MM_Min, mmData.MM_Max),
+        };
+      default:
+        return { min: 0, max: 0, avg: 0 };
     }
   };
 
@@ -71,7 +102,7 @@ const CurrentTempCard = () => {
         <Text fontSize={size} fontWeight="bold">
           {formatTemp(value)}
         </Text>
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color="whiteAlpha.800">
           {label}
         </Text>
       </CircularProgressLabel>
@@ -97,41 +128,41 @@ const CurrentTempCard = () => {
   const { min, max, avg } = getTemps();
 
   return (
-<Card 
-  bg="rgba(0, 0, 0, 0.4)"
-  backdropFilter="blur(10px)"
-  color="whiteAlpha.800"
-  p={6} 
-  boxShadow="md" 
-  borderRadius="2xl" 
-  maxWidth="700" 
-  height="319"
->
-  <CardBody>
-    {todayData ? (
-      <Flex direction="column" align="center" justify="center">
-        <Text fontSize="2xl" fontWeight="bold" mb={4}>
-          <FontAwesomeIcon icon={faTemperature1} /> Today ({dataSource})
-        </Text>
-        <Flex mt={4} justify="space-between" width="100%">
-          <Flex direction="column" align="center">
-            {renderTempCircle(min, "Min")}
+    <Card
+      bg="rgba(0, 0, 0, 0.49)"
+      backdropFilter="blur(10px)"
+      color="whiteAlpha.800"
+      p={6}
+      boxShadow="0 4px 20px rgba(0,0,0,0.1)"
+      borderRadius="16px"
+      maxWidth="700"
+      height="319"
+    >
+      <CardBody>
+        {todayData ? (
+          <Flex direction="column" align="center" justify="center">
+            <Text fontSize="2xl" fontWeight="bold" mb={4}>
+              <FontAwesomeIcon icon={faTemperature1} /> Today ({dataSource})
+            </Text>
+            <Flex mt={4} justify="space-between" width="100%">
+              <Flex direction="column" align="center">
+                {renderTempCircle(min, "Min")}
+              </Flex>
+              <Flex direction="column" align="center">
+                {renderTempCircle(max, "Max", "4xl")}
+              </Flex>
+              <Flex direction="column" align="center">
+                {renderTempCircle(avg, "Avg")}
+              </Flex>
+            </Flex>
           </Flex>
-          <Flex direction="column" align="center">
-            {renderTempCircle(max, "Max", "4xl")}
-          </Flex>
-          <Flex direction="column" align="center">
-            {renderTempCircle(avg, "Avg")}
-          </Flex>
-        </Flex>
-      </Flex>
-    ) : (
-      <Center>
-        <Text color="gray.300">No data available for today</Text>
-      </Center>
-    )}
-  </CardBody>
-</Card>
+        ) : (
+          <Center>
+            <Text color="whiteAlpha.800">No data available for today</Text>
+          </Center>
+        )}
+      </CardBody>
+    </Card>
   );
 };
 

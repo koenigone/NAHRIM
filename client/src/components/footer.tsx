@@ -31,7 +31,7 @@ const Footer = () => {
         </Flex>
         <Text>
           Data are updated daily{" "}
-          <Link to={nahrimLink} target="_blank" style={{ color: "#3A73C1", fontWeight: "bold" }}>
+          <Link to={nahrimLink} target="_blank" style={{ color: "white", fontWeight: "bold" }}>
             NAHRIM
           </Link>
         </Text>

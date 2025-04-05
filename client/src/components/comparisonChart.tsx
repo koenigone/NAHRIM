@@ -19,38 +19,46 @@ const ComparisonChart = () => {
   const [data, setData] = useState<any[]>([]);
   const { dataSource } = useDataSource();
 
-  useEffect(() => {
+  useEffect(() => { // fetch all three data sources
     const fetchData = async () => {
       try {
-        const windyResponse = await axios.get(        // windy data
-          "http://localhost:3000/api/windyDailyData"
-        );
+        const [windyResponse, owmResponse, mmResponse] = await Promise.all([
+          axios.get("http://localhost:3000/api/windyDailyData"),
+          axios.get("http://localhost:3000/api/owmDailyData"),
+          axios.get("http://localhost:3000/api/mmDailyData"),
+        ]);
+
         const windyData = windyResponse.data.data;
-
-        const owmResponse = await axios.get(          // openWeatherMap data
-          "http://localhost:3000/api/owmDailyData"
-        );
         const owmData = owmResponse.data.data;
+        const mmData = mmResponse.data.data;
 
-        if (windyData.length > 0 && owmData.length > 0) {
+        if (windyData.length > 0 && owmData.length > 0 && mmData.length > 0) {
           const windyToday = windyData[0];
           const owmToday = owmData[0];
+          const mmToday = mmData[0];
 
           const chartData = [
             {
               name: "Windy.com",
-              average: windyToday.Win_Min != null && windyToday.Win_Max != null ? calculateAverage(windyToday.Win_Min, windyToday.Win_Max) : "N/A",
-              min: windyToday.Win_Min ?? 0,
-              max: windyToday.Win_Max ?? 0,
+              average: calculateAverage(windyToday.Win_Min, windyToday.Win_Max),
+              min: windyToday.Win_Min,
+              max: windyToday.Win_Max,
               source: "windy",
             },
             {
               name: "OpenWeatherMap",
-              average: owmToday.OWM_Min != null && owmToday.OWM_Max != null ? calculateAverage(owmToday.OWM_Min, owmToday.OWM_Max) : "N/A",
-              min: owmToday.OWM_Min ?? 0,
-              max: owmToday.OWM_Max ?? 0,
+              average: calculateAverage(owmToday.OWM_Min, owmToday.OWM_Max),
+              min: owmToday.OWM_Min,
+              max: owmToday.OWM_Max,
               source: "owm",
-            }
+            },
+            {
+              name: "METMalaysia",
+              average: mmToday.MM_Current,
+              min: mmToday.MM_Min,
+              max: mmToday.MM_Max,
+              source: "metmalaysia",
+            },
           ];
 
           setData(chartData);
@@ -61,16 +69,16 @@ const ComparisonChart = () => {
     };
 
     fetchData();
-  }, [dataSource]); // refetch when data source changes
+  }, [dataSource]);
 
   return (
     <Card
-      bg="rgba(0, 0, 0, 0.4)"
+      bg="rgba(0, 0, 0, 0.49)"
       backdropFilter="blur(10px)"
       color="whiteAlpha.800"
       p={6}
-      boxShadow="md"
-      borderRadius="2xl"
+      boxShadow="0 4px 20px rgba(0,0,0,0.1)"
+      borderRadius="16px"
       maxWidth="700"
       height="319"
     >
@@ -80,16 +88,27 @@ const ComparisonChart = () => {
             data={data}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
-            <CartesianGrid stroke="rgba(250, 250, 250, 0.3)" strokeDasharray="3 3" />
+            <CartesianGrid
+              stroke="rgba(250, 250, 250, 0.3)"
+              strokeDasharray="3 3"
+            />
             <XAxis
               dataKey="name"
               tickLine={false}
               axisLine={false}
+              tick={{
+                fill: "rgba(255, 255, 255, 0.8)",
+                fontSize: 12,
+              }}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
-              domain={[0, 'dataMax + 5']}
+              domain={[0, "dataMax + 5"]}
+              tick={{
+                fill: "rgba(255, 255, 255, 0.8)",
+                fontSize: 12,
+              }}
             />
             <Tooltip
               wrapperStyle={{ fontSize: "14px" }}
@@ -100,7 +119,10 @@ const ComparisonChart = () => {
                 color: "#E0E0E0",
               }}
               formatter={(value, name) => [`${value}°C`, name]}
-              labelFormatter={(label) => `Source: ${label}`}
+              labelFormatter={(label) => {
+                const source = data.find((item) => item.name === label)?.source;
+                return `${label} (${source})`;
+              }}
             />
             <Legend />
             <Bar

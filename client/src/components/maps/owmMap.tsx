@@ -7,7 +7,9 @@ import {
   Tooltip,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { getColor } from "../utils";
 import { Text, Flex } from "@chakra-ui/react";
+import toast from "react-hot-toast";
 
 interface OWMDataPoint {
   name: string;
@@ -22,13 +24,10 @@ interface OWMDataPoint {
 
 const OWMMap = () => {
   const [owmData, setOWMData] = useState<OWMDataPoint[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  useEffect(() => { // retrieve map data from backend
     const fetchOWMData = async () => {
       try {
-        setIsLoading(true);
         const response = await fetch("http://localhost:3000/api/owmMapData");
         
         if (!response.ok) {
@@ -37,40 +36,15 @@ const OWMMap = () => {
         }
         
         const data = await response.json();
-        console.log("Fetched OpenWeatherMap Data:", data);
         setOWMData(data);
       } catch (error) {
-        console.error("Error fetching OpenWeatherMap data:", error);
-        setError(error instanceof Error ? error.message : "Unknown error occurred");
-      } finally {
-        setIsLoading(false);
+        toast.error("Error retrieving map data for OpenWeatherMap");
       }
     };
   
     fetchOWMData();
   }, []);
 
-  const getColor = (temp: number) => {
-    return temp > 28 ? "#C43031" : temp > 26 ? "#EFCE11" : "#3FAA37";
-  };
-
-  const getWeatherIcon = (condition?: string) => {
-    if (!condition) return "☁️";
-    const conditions = {
-      Clear: "☀️",
-      Clouds: "☁️",
-      Rain: "🌧️",
-      Thunderstorm: "⛈️",
-      Snow: "❄️",
-      Mist: "🌫️",
-      Fog: "🌫️",
-      Drizzle: "🌦️"
-    };
-    return conditions[condition as keyof typeof conditions] || "☁️";
-  };
-
-  if (isLoading) return <Text>Loading weather data...</Text>;
-  if (error) return <Text color="red.500">Error: {error}</Text>;
 
   return (
     <>
@@ -106,7 +80,7 @@ const OWMMap = () => {
           >
             <Tooltip direction="top" offset={[0, -10]} permanent>
               <span className="temperature-label">
-                {Math.round(point.temperature)}°C {getWeatherIcon(point.weatherCondition)}
+                {Math.round(point.temperature)}°C
               </span>
             </Tooltip>
             <Popup>
@@ -114,15 +88,11 @@ const OWMMap = () => {
               <br />
               <strong>Temp:</strong> {Math.round(point.temperature)}°C
               <br />
-              <strong>Condition:</strong> {point.weatherCondition || "N/A"} {getWeatherIcon(point.weatherCondition)}
-              <br />
-              <strong>Humidity:</strong> {point.humidity || "N/A"}%
-              <br />
-              <strong>Wind:</strong> {point.windSpeed || "N/A"} m/s
-              <br />
               <strong>Date:</strong> {point.date}
               <br />
-              <strong>Coordinates:</strong> {point.lat.toFixed(4)}, {point.lon.toFixed(4)}
+              <strong>Lat</strong> {point.lat.toFixed(4)}
+              <br />
+              <strong>Lon</strong> {point.lon.toFixed(4)}
             </Popup>
           </CircleMarker>
         ))}

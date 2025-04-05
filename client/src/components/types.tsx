@@ -14,9 +14,9 @@ export interface WindyData extends WeatherData {
 }
 
 export interface METMalaysiaData extends WeatherData {
-  Met_Date: string;
-  Met_Min: number;
-  Met_Max: number;
+  MM_Date: string;
+  MM_Min: number;
+  MM_Max: number;
   name?: string;
   average?: number;
 }

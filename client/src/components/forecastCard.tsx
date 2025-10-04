@@ -47,7 +47,7 @@ const WeatherDashboard = () => {
           default:
             endpoint = "/api/windyWeeklyData";
         }
-  
+
         // fetch data from backend
         const response = await axios.get(endpoint);
         const tableData = response.data.data;
@@ -68,11 +68,11 @@ const WeatherDashboard = () => {
               return data.Win_Date === today;
           }
         });
-  
+
         const todayMetData = metTableData.find(
           (data: METMalaysiaData) => data.MM_Date === today
         );
-  
+
         setTodayData(todayData || todayMetData || null);
         setWeeklyData(tableData.slice(0, 5));
       } catch (error) {
@@ -81,7 +81,7 @@ const WeatherDashboard = () => {
         setLoading(false);
       }
     };
-  
+
     fetchChartData();
   }, [dataSource]);
 
@@ -92,8 +92,8 @@ const WeatherDashboard = () => {
     return "Win_Current" in todayData
       ? (todayData as WindyData).Win_Current
       : "OWM_Current" in todayData
-      ? (todayData as OpenWeatherMapData).OWM_Current
-      : calculateAverage(todayData.MM_Min, todayData.MM_Max);
+        ? (todayData as OpenWeatherMapData).OWM_Current
+        : calculateAverage(todayData.MM_Min, todayData.MM_Max);
   };
 
   const getDateField = (
@@ -102,8 +102,8 @@ const WeatherDashboard = () => {
     return "Win_Date" in data
       ? data.Win_Date
       : "OWM_Date" in data
-      ? data.OWM_Date
-      : data.MM_Date;
+        ? data.OWM_Date
+        : data.MM_Date;
   };
 
   const getMinTemp = (
@@ -112,8 +112,8 @@ const WeatherDashboard = () => {
     return "Win_Min" in data
       ? data.Win_Min
       : "OWM_Min" in data
-      ? data.OWM_Min
-      : data.MM_Min;
+        ? data.OWM_Min
+        : data.MM_Min;
   };
 
   const getMaxTemp = (
@@ -122,8 +122,8 @@ const WeatherDashboard = () => {
     return "Win_Max" in data
       ? data.Win_Max
       : "OWM_Max" in data
-      ? data.OWM_Max
-      : data.MM_Max;
+        ? data.OWM_Max
+        : data.MM_Max;
   };
 
   return (
@@ -134,8 +134,8 @@ const WeatherDashboard = () => {
       p={6}
       boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       borderRadius="16px"
-      maxW={{ base: "100%", md: "600px", lg: "800px", xl: "1000px" }}
-      minH={{ base: "319px", md: "350px", lg: "500px" }}
+      maxW={{ base: "100%", md: "700px", lg: "1000px" }}
+      h={{ base: "319px", md: "380px", lg: "420px", xl: "500px" }}
     >
       <Box position="absolute" top={0} left={0} right={0} bottom={0} zIndex={0}>
         <Image

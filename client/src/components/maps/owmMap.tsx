@@ -28,7 +28,7 @@ const OWMMap = () => {
   useEffect(() => { // retrieve map data from backend
     const fetchOWMData = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/owmMapData");
+        const response = await fetch("/api/owmMapData");
         
         if (!response.ok) {
           const errorText = await response.text();

@@ -26,16 +26,16 @@ const TemperatureChart = () => {
         let endpoint = "";
         switch (dataSource) {
           case "Windy":
-            endpoint = "http://localhost:3000/api/windyWeeklyData";
+            endpoint = "/api/windyWeeklyData";
             break;
           case "OpenWeatherMap":
-            endpoint = "http://localhost:3000/api/owmWeeklyData";
+            endpoint = "/api/owmWeeklyData";
             break;
           case "METMalaysia":
-            endpoint = "http://localhost:3000/api/mmWeeklyData";
+            endpoint = "/api/mmWeeklyData";
             break;
           default:
-            endpoint = "http://localhost:3000/api/windyWeeklyData";
+            endpoint = "/api/windyWeeklyData";
         }
 
         const response = await axios.get(endpoint);

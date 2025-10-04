@@ -31,16 +31,16 @@ const CurrentTempCard = () => {
         let endpoint = "";
         switch (dataSource) {
           case "Windy":
-            endpoint = "http://localhost:3000/api/windyDailyData";
+            endpoint = "/api/windyDailyData";
             break;
           case "OpenWeatherMap":
-            endpoint = "http://localhost:3000/api/owmDailyData";
+            endpoint = "/api/owmDailyData";
             break;
           case "METMalaysia":
-            endpoint = "http://localhost:3000/api/mmDailyData";
+            endpoint = "/api/mmDailyData";
             break;
           default:
-            endpoint = "http://localhost:3000/api/windyDailyData";
+            endpoint = "/api/windyDailyData";
         }
 
         const { data } = await axios.get(endpoint);

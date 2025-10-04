@@ -36,22 +36,22 @@ const WeatherDashboard = () => {
         let endpoint = "";
         switch (dataSource) {
           case "Windy":
-            endpoint = "http://localhost:3000/api/windyWeeklyData";
+            endpoint = "/api/windyWeeklyData";
             break;
           case "OpenWeatherMap":
-            endpoint = "http://localhost:3000/api/owmWeeklyData";
+            endpoint = "/api/owmWeeklyData";
             break;
           case "METMalaysia":
-            endpoint = "http://localhost:3000/api/mmWeeklyData";
+            endpoint = "/api/mmWeeklyData";
             break;
           default:
-            endpoint = "http://localhost:3000/api/windyWeeklyData";
+            endpoint = "/api/windyWeeklyData";
         }
   
         // fetch data from backend
         const response = await axios.get(endpoint);
         const tableData = response.data.data;
-        const metResponse = await axios.get("http://localhost:3000/api/mmWeeklyData");
+        const metResponse = await axios.get("api/mmWeeklyData");
         const metTableData = metResponse.data.data;
         const today = new Date().toISOString().split("T")[0];
 

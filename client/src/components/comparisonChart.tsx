@@ -23,9 +23,9 @@ const ComparisonChart = () => {
     const fetchData = async () => {
       try {
         const [windyResponse, owmResponse, mmResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/windyDailyData"),
-          axios.get("http://localhost:3000/api/owmDailyData"),
-          axios.get("http://localhost:3000/api/mmDailyData"),
+          axios.get("/api/windyDailyData"),
+          axios.get("/api/owmDailyData"),
+          axios.get("/api/mmDailyData"),
         ]);
 
         const windyData = windyResponse.data.data;

@@ -24,7 +24,7 @@ const WindyMap = () => {
   useEffect(() => { // retrieve map data from backend
     const fetchWindyData = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/windyMapData");
+        const response = await fetch("/api/windyMapData");
         if (!response.ok) {
           toast.error(`HTTP error! status: ${response.status}`);
         }

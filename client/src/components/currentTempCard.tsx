@@ -137,7 +137,7 @@ const CurrentTempCard = () => {
       borderRadius="16px"
       w="100%"
       maxW={{ base: "100%",  sm: "650", md: "700px", lg: "1000px", xl: "1200px" }}
-      maxH={{ base: "250px", sm: "280px", md: "300px", lg: "319px", xl: "500px" }}
+      h={{ base: "250px", sm: "280px", md: "300px", lg: "319px", xl: "500px" }}
       mx="auto"
     >
       <CardBody h="100%">

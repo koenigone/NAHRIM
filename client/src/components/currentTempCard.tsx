@@ -135,8 +135,8 @@ const CurrentTempCard = () => {
       p={6}
       boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       borderRadius="16px"
-      maxW={{ base: "100%", md: "600px", lg: "800px", xl: "1000px" }}
-      minH={{ base: "319px", md: "350px", lg: "500px" }}
+      maxW={{ base: "100%", md: "700px", lg: "1000px" }}
+      h={{ base: "200px", md: "319px", lg: "400px", xl: "500px" }}
     >
       <CardBody>
         {todayData ? (

@@ -136,7 +136,7 @@ const WeatherDashboard = () => {
       borderRadius="16px"
       w="100%"
       maxW={{ base: "100%", md: "700px", lg: "1000px", xl: "1200px" }}
-      h={{ base: "250px", sm: "280px", md: "350px", lg: "430px", xl: "500px" }}
+      maxH={{ base: "250px", sm: "280px", md: "350px", lg: "430px", xl: "500px" }}
       mx="auto"
     >
       <Box position="absolute" top={0} left={0} right={0} bottom={0} zIndex={0}>

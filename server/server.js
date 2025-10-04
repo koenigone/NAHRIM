@@ -15,8 +15,17 @@ app.use("/api", windyRoutes);
 app.use("/api", owmRoutes);
 app.use("/api", mmRoutes);
 
+// server frontend
+const clientBuildPath = path.join(__dirname, "../client/dist");
+app.use(express.static(clientBuildPath));
+
+// serve the frontend for any other route
+app.get("*", (req, res) => {
+  res.sendFile(path.join(clientBuildPath, "index.html"));
+});
+
 // Server port
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-});
+}); 

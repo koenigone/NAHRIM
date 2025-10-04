@@ -2,7 +2,7 @@ const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 
 // Point exactly to the .db file inside server/
-const dbPath = path.join(__dirname, "NAHRIM.db");
+const dbPath = path.join(__dirname, "../NAHRIM.db");
 
 console.log("Connecting to DB at:", dbPath);
 

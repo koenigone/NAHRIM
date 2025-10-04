@@ -11,7 +11,7 @@ const DataDashboard = () => {
         templateColumns="repeat(2, 1fr)"
         gap={4}
         width="100%"
-        maxWidth="1400px"
+        maxWidth="1980px"
       >
         <GridItem><CurrentTempCard /></GridItem>
         <GridItem><ForecastCard /></GridItem>

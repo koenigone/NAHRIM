@@ -1,6 +1,12 @@
+const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 
-const db = new sqlite3.Database("../../NAHRIMdb.db", (err) => {
+// Point exactly to the .db file inside server/
+const dbPath = path.join(__dirname, "NAHRIMdb.db");
+
+console.log("Connecting to DB at:", dbPath);
+
+const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error("Error opening database:", err.message);
   } else {

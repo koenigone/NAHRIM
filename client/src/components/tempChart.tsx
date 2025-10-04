@@ -95,10 +95,12 @@ const TemperatureChart = () => {
       p={6}
       boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       borderRadius="16px"
+      w="100%"
       maxW={{ base: "100%", md: "700px", lg: "1000px", xl: "1200px" }}
-      h={{ base: "200px", md: "319px", lg: "400px", xl: "500px" }}
+      h={{ base: "250px", sm: "280px", md: "350px", lg: "430px", xl: "500px" }}
+      mx="auto"
     >
-      <CardBody>
+      <CardBody h="100%">
         <ResponsiveContainer width="100%" height={250}>
           <LineChart
             data={chartData}

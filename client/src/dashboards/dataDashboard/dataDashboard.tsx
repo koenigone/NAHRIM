@@ -6,17 +6,28 @@ import ComparisonChart from "../../components/comparisonChart";
 
 const DataDashboard = () => {
   return (
-    <Flex direction="column" align="center" justify="center" p={4}>
+    <Flex direction="column" align="center" justify="center" p={{ base: 2, md: 4, lg: 8 }}>
       <Grid
-        templateColumns="repeat(2, 1fr)"
-        gap={4}
+        templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+        gap={{ base: 4, md: 6 }}
         width="100%"
         maxWidth="1980px"
       >
-        <GridItem><CurrentTempCard /></GridItem>
-        <GridItem><ForecastCard /></GridItem>
-        <GridItem><TemperatureChart /></GridItem>
-        <GridItem><ComparisonChart /></GridItem>
+        <GridItem>
+          <CurrentTempCard />
+        </GridItem>
+
+        <GridItem>
+          <ForecastCard />
+        </GridItem>
+
+        <GridItem>
+          <TemperatureChart />
+        </GridItem>
+
+        <GridItem>
+          <ComparisonChart />
+        </GridItem>
       </Grid>
     </Flex>
   );

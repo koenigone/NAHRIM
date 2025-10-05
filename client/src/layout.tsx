@@ -15,7 +15,7 @@ const Layout = ({ children }: LayoutProps) => {
         <Header />
       </Box>
 
-      <Box as="main" flex={1} p={8} overflowY="auto">
+      <Box as="main" flex={1} p={{ base: 2, sm: 4, md: 6, lg: 8 }} overflowY="auto">
         {children}
       </Box>
 

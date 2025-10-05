@@ -49,7 +49,7 @@ const OWMMap = () => {
   return (
     <>
       <Flex justifyContent="center" gap={4} alignItems="center" marginBottom={4}>
-        <Text fontSize={27} fontWeight="bold">
+        <Text fontSize={30} fontWeight="bold">
           OpenWeatherMap
         </Text>
       </Flex>
@@ -57,7 +57,7 @@ const OWMMap = () => {
       <MapContainer
         center={[5.4, 100.3]}
         zoom={11}
-        style={{ width: "442px", height: "630px", borderRadius: "10px" }}
+        style={{ width: "542px", height: "1030px", borderRadius: "10px" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <TileLayer

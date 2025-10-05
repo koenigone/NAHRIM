@@ -93,7 +93,7 @@ const CurrentTempCard = () => {
   const renderTempCircle = (value: number, label: string, size = "3xl") => (
     <CircularProgress
       value={(value / 50) * 100}
-      size="170px"
+      size="240px"
       thickness="8px"
       trackColor="transparent"
       color={getTemperatureColor(value)}
@@ -136,25 +136,24 @@ const CurrentTempCard = () => {
       boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       borderRadius="16px"
       w="100%"
-      maxW={{ base: "100%", md: "100%", lg: "100%" }}
-      h={{ base: "280px", sm: "320px", md: "350px", lg: "290px", xl: "450px" }}
+      h={{ base: "auto", md: "auto", lg: "319px", xl: "520px" }}
       mx="auto"
     >
       <CardBody h="100%">
         {todayData ? (
           <Flex direction="column" align="center" justify="center">
-            <Text fontSize="2xl" fontWeight="bold" mb={4}>
+            <Text fontSize="3xl" fontWeight="bold" mb={12}>
               <FontAwesomeIcon icon={faTemperature1} /> Today ({dataSource})
             </Text>
             <Flex mt={4} justify="space-between" width="100%">
               <Flex direction="column" align="center">
-                {renderTempCircle(min, "Min")}
+                {renderTempCircle(min, "Min", "6xl")}
               </Flex>
               <Flex direction="column" align="center">
-                {renderTempCircle(max, "Max", "4xl")}
+                {renderTempCircle(avg, "Avg", "6xl")}
               </Flex>
               <Flex direction="column" align="center">
-                {renderTempCircle(avg, "Avg")}
+                {renderTempCircle(max, "Max", "6xl")}
               </Flex>
             </Flex>
           </Flex>

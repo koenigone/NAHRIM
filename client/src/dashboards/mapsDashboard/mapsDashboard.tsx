@@ -6,7 +6,7 @@ import OWMMap from "../../components/maps/owmMap";
 const MapsDashboard = () => {
   return (
     <Flex justify="center" align="center">
-      <SimpleGrid columns={3} spacing={12}>
+      <SimpleGrid columns={3} spacing="200px">
         <Box w="442px">
           <OWMMap />
         </Box>

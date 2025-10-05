@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { WindyData, OpenWeatherMapData, METMalaysiaData } from "./types";
-import { Card, CardBody } from "@chakra-ui/react";
+import { Card, CardBody, Box } from "@chakra-ui/react";
 import {
   LineChart,
   Line,
@@ -96,84 +96,85 @@ const TemperatureChart = () => {
       boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       borderRadius="16px"
       w="100%"
-      maxW={{ base: "100%", md: "100%", lg: "100%" }}
-      h={{ base: "280px", sm: "320px", md: "350px", lg: "290px", xl: "450px" }}
+      h={{ base: "280px", sm: "320px", md: "350px", lg: "319px", xl: "550px" }}
       mx="auto"
     >
       <CardBody h="100%">
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart
-            data={chartData}
-            margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
-          >
-            <CartesianGrid
-              stroke="rgba(250, 250, 250, 0.3)"
-              strokeDasharray="3 3"
-            />
-            <XAxis
-              dataKey="day"
-              tickLine={false}
-              axisLine={false}
-              tick={{
-                fill: "rgba(255, 255, 255, 0.8)",
-                fontSize: 12,
-              }}
-            />
-            <YAxis
-              unit="°C"
-              tickLine={false}
-              axisLine={false}
-              domain={[0, 40]}
-              tick={{
-                fill: "rgba(255, 255, 255, 0.8)",
-                fontSize: 12,
-              }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#2D2D2D",
-                border: "none",
-                borderRadius: "5px",
-              }}
-              formatter={(value: number, name: string) => [
-                `${value}°c`,
-                name.replace(" Temp", ""),
-              ]}
-              labelFormatter={(label) => {
-                const item = chartData.find((d) => d.day === label);
-                return item ? `${item.day}, ${item.formattedDate}` : label;
-              }}
-            />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="min"
-              name="Min"
-              stroke="#3dad35"
-              strokeWidth={3}
-              dot={{ r: 5, fill: "#3dad35" }}
-              activeDot={{ r: 8 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="max"
-              name="Max"
-              stroke="#78c1ea"
-              strokeWidth={3}
-              dot={{ r: 5, fill: "#78c1ea" }}
-              activeDot={{ r: 8 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="avg"
-              name="Avg"
-              stroke="#94c122"
-              strokeWidth={3}
-              dot={{ r: 5, fill: "#94c122" }}
-              activeDot={{ r: 8 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <Box h={{ base: "250px", md: "350px", lg: "450px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
+            >
+              <CartesianGrid
+                stroke="rgba(250, 250, 250, 0.3)"
+                strokeDasharray="3 3"
+              />
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tick={{
+                  fill: "rgba(255, 255, 255, 0.8)",
+                  fontSize: 12,
+                }}
+              />
+              <YAxis
+                unit="°C"
+                tickLine={false}
+                axisLine={false}
+                domain={[0, 40]}
+                tick={{
+                  fill: "rgba(255, 255, 255, 0.8)",
+                  fontSize: 12,
+                }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#2D2D2D",
+                  border: "none",
+                  borderRadius: "5px",
+                }}
+                formatter={(value: number, name: string) => [
+                  `${value}°c`,
+                  name.replace(" Temp", ""),
+                ]}
+                labelFormatter={(label) => {
+                  const item = chartData.find((d) => d.day === label);
+                  return item ? `${item.day}, ${item.formattedDate}` : label;
+                }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="min"
+                name="Min"
+                stroke="#3dad35"
+                strokeWidth={3}
+                dot={{ r: 5, fill: "#3dad35" }}
+                activeDot={{ r: 8 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="max"
+                name="Max"
+                stroke="#78c1ea"
+                strokeWidth={3}
+                dot={{ r: 5, fill: "#78c1ea" }}
+                activeDot={{ r: 8 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="avg"
+                name="Avg"
+                stroke="#94c122"
+                strokeWidth={3}
+                dot={{ r: 5, fill: "#94c122" }}
+                activeDot={{ r: 8 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
       </CardBody>
     </Card>
   );

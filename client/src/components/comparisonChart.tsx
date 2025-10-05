@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Card, CardBody } from "@chakra-ui/react";
+import { Card, CardBody, Box } from "@chakra-ui/react";
 import toast from "react-hot-toast";
 import { calculateAverage } from "./utils";
 import { useDataSource } from "../../context/dataSourceContext";
@@ -80,73 +80,74 @@ const ComparisonChart = () => {
       boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       borderRadius="16px"
       w="100%"
-      maxW={{ base: "100%", md: "100%", lg: "100%" }}
-      h={{ base: "280px", sm: "320px", md: "350px", lg: "290px", xl: "450px" }}
+      h={{ base: "280px", lg: "319px", xl: "550px" }}
       mx="auto"
     >
       <CardBody h="100%">
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart
-            data={data}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid
-              stroke="rgba(250, 250, 250, 0.3)"
-              strokeDasharray="3 3"
-            />
-            <XAxis
-              dataKey="name"
-              tickLine={false}
-              axisLine={false}
-              tick={{
-                fill: "rgba(255, 255, 255, 0.8)",
-                fontSize: 12,
-              }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              domain={[0, "dataMax + 5"]}
-              tick={{
-                fill: "rgba(255, 255, 255, 0.8)",
-                fontSize: 12,
-              }}
-            />
-            <Tooltip
-              wrapperStyle={{ fontSize: "14px" }}
-              contentStyle={{
-                backgroundColor: "#2D2D2D",
-                border: "none",
-                borderRadius: "5px",
-                color: "#E0E0E0",
-              }}
-              formatter={(value, name) => [`${value}°C`, name]}
-              labelFormatter={(label) => {
-                const source = data.find((item) => item.name === label)?.source;
-                return `${label} (${source})`;
-              }}
-            />
-            <Legend />
-            <Bar
-              dataKey="min"
-              fill="#4fd1c5"
-              name="Min"
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar
-              dataKey="max"
-              fill="#f56565"
-              name="Max"
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar
-              dataKey="average"
-              fill="#79c0ea"
-              name="Avg"
-              radius={[4, 4, 0, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        <Box h={{ base: "250px", md: "350px", lg: "450px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={data}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid
+                stroke="rgba(250, 250, 250, 0.3)"
+                strokeDasharray="3 3"
+              />
+              <XAxis
+                dataKey="name"
+                tickLine={false}
+                axisLine={false}
+                tick={{
+                  fill: "rgba(255, 255, 255, 0.8)",
+                  fontSize: 12,
+                }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                domain={[0, "dataMax + 5"]}
+                tick={{
+                  fill: "rgba(255, 255, 255, 0.8)",
+                  fontSize: 12,
+                }}
+              />
+              <Tooltip
+                wrapperStyle={{ fontSize: "14px" }}
+                contentStyle={{
+                  backgroundColor: "#2D2D2D",
+                  border: "none",
+                  borderRadius: "5px",
+                  color: "#E0E0E0",
+                }}
+                formatter={(value, name) => [`${value}°C`, name]}
+                labelFormatter={(label) => {
+                  const source = data.find((item) => item.name === label)?.source;
+                  return `${label} (${source})`;
+                }}
+              />
+              <Legend />
+              <Bar
+                dataKey="min"
+                fill="#4fd1c5"
+                name="Min"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="max"
+                fill="#f56565"
+                name="Max"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="average"
+                fill="#79c0ea"
+                name="Avg"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
       </CardBody>
     </Card>
   );

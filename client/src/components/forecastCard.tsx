@@ -135,8 +135,7 @@ const WeatherDashboard = () => {
       boxShadow="0 4px 20px rgba(0,0,0,0.1)"
       borderRadius="16px"
       w="100%"
-      maxW={{ base: "100%", md: "100%", lg: "100%" }}
-      h={{ base: "280px", sm: "320px", md: "350px", lg: "290px", xl: "450px" }}
+      h={{ base: "auto", md: "auto", lg: "319px", xl: "520px" }}
       mx="auto"
     >
       <Box position="absolute" top={0} left={0} right={0} bottom={0} zIndex={0}>
@@ -146,6 +145,7 @@ const WeatherDashboard = () => {
           opacity={0.1}
           width="100%"
           height="100%"
+          borderRadius="16px"
           objectFit="cover"
         />
       </Box>
@@ -154,7 +154,7 @@ const WeatherDashboard = () => {
         {loading ? (
           <Flex direction="column" align="center" justify="center">
             <Skeleton height="24px" width="150px" mb={4} />
-            <SimpleGrid columns={5} spacing={4} mb={4}>
+            <SimpleGrid columns={5} spacing={4} mb={12}>
               {Array.from({ length: 5 }).map((_, index) => (
                 <Box key={index} textAlign="center">
                   <Skeleton height="18px" width="50px" mb={2} />
@@ -169,12 +169,12 @@ const WeatherDashboard = () => {
               {getMonthName(getDateField(todayData))}
             </Text>
 
-            <SimpleGrid columns={5} spacing={4} mb={4}>
+            <SimpleGrid columns={5} spacing={4} mb={12}>
               {weeklyData.map((data, index) => (
                 <Box key={index} textAlign="center">
-                  <Text fontSize="sm">{formatDate(getDateField(data))}</Text>
+                  <Text fontSize="md" opacity="80%" fontWeight="bold">{formatDate(getDateField(data))}</Text>
                   <Tooltip label="Average" bg="gray.500" hasArrow>
-                    <Text fontSize="lg" fontWeight="bold">
+                    <Text fontSize="25px" opacity="90%" fontWeight="bold">
                       {calculateAverage(getMinTemp(data), getMaxTemp(data))}°c
                     </Text>
                   </Tooltip>
@@ -182,9 +182,9 @@ const WeatherDashboard = () => {
               ))}
             </SimpleGrid>
 
-            <Flex direction="row" align="center" justify="space-between" px={4}>
+            <Flex direction="row" align="center" justify="space-between" px={16}>
               <Box>
-                <Text fontSize="2xl" fontWeight="bold">
+                <Text fontSize="6xl" opacity="90%" fontWeight="bold">
                   Penang
                 </Text>
                 <Text fontSize="4xl" fontWeight="bold" mt={2}>

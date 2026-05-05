@@ -1,10 +1,33 @@
 const db = require("../config/db");
 const axios = require("axios");
-const cron = require('node-cron');
-const { mapLocations } = require('../helpers/mapsLocations');
+const { mapLocations } = require("../helpers/mapsLocations");
+
+const getDb = (sql, params = []) =>
+  new Promise((resolve, reject) => {
+    db.get(sql, params, (err, dataRow) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve(dataRow);
+    });
+  });
+
+const runDb = (sql, params = []) =>
+  new Promise((resolve, reject) => {
+    db.run(sql, params, function onRun(err) {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve(this);
+    });
+  });
 
 /*
-  fetchAndInsertWindyData structure PLEASE READ
+  syncWindyData structure PLEASE READ
   Penang's latitude and longitue
   API usage and data extraction
   data standardizing (timestamps, temps conversion etc..)
@@ -12,107 +35,103 @@ const { mapLocations } = require('../helpers/mapsLocations');
 
   with loads of error handling in between
 */
-const fetchAndInsertWindyData = async (req, res) => {
+const syncWindyData = async () => {
   const latitude = 5.285153;
   const longitude = 100.456238;
   const windyAPIURL = "https://api.windy.com/api/point-forecast/v2";
 
-  try {
-    const windyAPIRequestBody = {
-      lat: latitude,
-      lon: longitude,
-      model: "gfs",
-      parameters: ["temp"],
-      levels: ["surface"],
-      key: process.env.WINDY_API_KEY,
-    };
+  const windyAPIRequestBody = {
+    lat: latitude,
+    lon: longitude,
+    model: "gfs",
+    parameters: ["temp"],
+    levels: ["surface"],
+    key: process.env.WINDY_API_KEY,
+  };
 
-    // fetching data from Windy API
-    const windyResponse = await axios.post(windyAPIURL, windyAPIRequestBody);
-    const windyWeatherData = windyResponse.data;
+  const windyResponse = await axios.post(windyAPIURL, windyAPIRequestBody);
+  const windyWeatherData = windyResponse.data;
 
-    // Validate the API response
-    if (!windyWeatherData.ts || !windyWeatherData["temp-surface"]) {
-      return res.status(500).json({ errMessage: "Invalid API response" });
-    }
+  if (!windyWeatherData.ts || !windyWeatherData["temp-surface"]) {
+    throw new Error("Invalid API response");
+  }
 
-    // extracting timestamp and temperature data from windyWeather object
-    const { ts, "temp-surface": tempSurface } = windyWeatherData; // renaming temp-surface
-    let temperatureData = {};
+  const { ts, "temp-surface": tempSurface } = windyWeatherData;
+  const temperatureData = {};
 
-    // Get the current date and calculate the date 7 days from now
-    const currentDate = new Date();
-    const sevenDaysLater = new Date(currentDate);
-    sevenDaysLater.setDate(currentDate.getDate() + 7);
+  const currentDate = new Date();
+  const sevenDaysLater = new Date(currentDate);
+  sevenDaysLater.setDate(currentDate.getDate() + 7);
 
-    // Process the API data
-    ts.forEach((timestamp, index) => {
-      const date = new Date(timestamp);
-      if (date >= currentDate && date <= sevenDaysLater) {
-        const dateString = date.toISOString().split("T")[0]; // Convert to YYYY-MM-DD format
-        const tempCelsius = tempSurface[index] - 273.15;     // Convert from Kelvin to Celsius
+  ts.forEach((timestamp, index) => {
+    const date = new Date(timestamp);
+    if (date >= currentDate && date <= sevenDaysLater) {
+      const dateString = date.toISOString().split("T")[0];
+      const tempCelsius = tempSurface[index] - 273.15;
 
-        // Checks if the date (dateString) already exists as a key in the temperatureData object
-        // If not, initializes it as an empty array
-        if (!temperatureData[dateString]) {
-          temperatureData[dateString] = [];
-        }
-        temperatureData[dateString].push(tempCelsius);       // Group temperatures by date
+      if (!temperatureData[dateString]) {
+        temperatureData[dateString] = [];
       }
-    });
 
-    // Insert or update data in the database
-    for (const date in temperatureData) {
-      const temps = temperatureData[date];
-      const minTemp = Math.round(Math.min(...temps)); // round min temp
-      const maxTemp = Math.round(Math.max(...temps)); // round max temp
-      const currentTemp = Math.round(temps[0]);       // round current temp
-
-      // Check if the date already exists in the database
-      const selectWindyTableSql = `SELECT Win_Min, Win_Max FROM Windy WHERE Win_Date = ?`;
-      db.get(selectWindyTableSql, [date], (err, dataRow) => {
-        if (err) {
-          return res.status(500).json({ error: err.message });
-        }
-
-        let finalMinTemp = minTemp;
-        let finalMaxTemp = maxTemp;
-
-        if (dataRow) { // calculate the average if the date already exists
-          finalMinTemp = Math.round((parseFloat(dataRow.Win_Min) + parseFloat(minTemp)) / 2);
-          finalMaxTemp = Math.round((parseFloat(dataRow.Win_Max) + parseFloat(maxTemp)) / 2);
-        }
-
-        // Insert or update the database
-        const insertWindyDataQuery = `
-          INSERT INTO Windy (Win_Date, Win_Min, Win_Max, Win_Current) 
-          VALUES (?, ?, ?, ?)
-          ON CONFLICT(Win_Date) 
-          DO UPDATE SET 
-              Win_Min = excluded.Win_Min, 
-              Win_Max = excluded.Win_Max,
-              Win_Current = excluded.Win_Current;`;
-
-        db.run(insertWindyDataQuery, [date, finalMinTemp, finalMaxTemp, currentTemp], function (err) {
-          if (err) {
-            res.status(500).json({ errMessage: err.message });
-          }
-        });
-      });
+      temperatureData[dateString].push(tempCelsius);
     }
-    res.json({ message: "Windy data inserted" });
+  });
+
+  const dates = Object.keys(temperatureData);
+  if (dates.length === 0) {
+    throw new Error("No Windy forecast data extracted.");
+  }
+
+  for (const date of dates) {
+    const temps = temperatureData[date];
+    const minTemp = Math.round(Math.min(...temps));
+    const maxTemp = Math.round(Math.max(...temps));
+    const currentTemp = Math.round(temps[0]);
+
+    const existingRow = await getDb(
+      "SELECT Win_Min, Win_Max FROM Windy WHERE Win_Date = ?",
+      [date]
+    );
+
+    let finalMinTemp = minTemp;
+    let finalMaxTemp = maxTemp;
+
+    if (existingRow) {
+      finalMinTemp = Math.round((parseFloat(existingRow.Win_Min) + minTemp) / 2);
+      finalMaxTemp = Math.round((parseFloat(existingRow.Win_Max) + maxTemp) / 2);
+    }
+
+    await runDb(
+      `INSERT INTO Windy (Win_Date, Win_Min, Win_Max, Win_Current)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(Win_Date)
+       DO UPDATE SET
+         Win_Min = excluded.Win_Min,
+         Win_Max = excluded.Win_Max,
+         Win_Current = excluded.Win_Current;`,
+      [date, finalMinTemp, finalMaxTemp, currentTemp]
+    );
+  }
+
+  return {
+    source: "Windy",
+    inserted: dates.length,
+    dates,
+  };
+};
+
+const fetchAndInsertWindyData = async (req, res) => {
+  try {
+    const result = await syncWindyData();
+    res.json({
+      message: "Windy data inserted",
+      result,
+    });
   } catch (error) {
     res.status(500).json({ errMessage: error.message });
   }
 };
 
-// schedule the task to run daily at 12 am
-cron.schedule('0 0 * * *', async () => {
-  console.log("Running daily data update for Windy...");
-  await fetchAndInsertWindyData();
-});
-
-// retrieve the daily data from the database
 const getWindyDataForToday = (req, res) => {
   const today = new Date().toISOString().split("T")[0];
   const getWindDataQuery = "SELECT * FROM Windy WHERE Win_Date = ?;";
@@ -121,24 +140,30 @@ const getWindyDataForToday = (req, res) => {
     if (err) {
       return res.status(500).json({ errMessage: err.message });
     }
+
     res.json({ data: dataRow });
   });
 };
 
-// retrieve the weekly data from the database
 const getWindyDataForSevenDaysChart = (req, res) => {
   const today = new Date().toISOString().split("T")[0];
   const sevenDaysLater = new Date();
   sevenDaysLater.setDate(sevenDaysLater.getDate() + 5);
 
-  const getWindDataQuery = "SELECT * FROM Windy WHERE Win_Date BETWEEN ? AND ? ORDER BY Win_Date ASC;";
+  const getWindDataQuery =
+    "SELECT * FROM Windy WHERE Win_Date BETWEEN ? AND ? ORDER BY Win_Date ASC;";
 
-  db.all(getWindDataQuery, [today, sevenDaysLater.toISOString().split("T")[0]], (err, dataRow) => {
-    if (err) {
-      return res.status(500).json({ errMessage: err.message });
+  db.all(
+    getWindDataQuery,
+    [today, sevenDaysLater.toISOString().split("T")[0]],
+    (err, dataRow) => {
+      if (err) {
+        return res.status(500).json({ errMessage: err.message });
+      }
+
+      res.json({ data: dataRow });
     }
-    res.json({ data: dataRow });
-  });
+  );
 };
 
 const getWindyDataForMap = async (req, res) => {
@@ -147,31 +172,31 @@ const getWindyDataForMap = async (req, res) => {
 
     const results = await Promise.all(
       mapLocations.map(async (location) => {
-        const response = await axios.post(windyAPIURL,
-          {
-            lat: location.lat,
-            lon: location.lon,
-            model: "gfs",
-            parameters: ["temp"],
-            levels: ["surface"],
-            key: process.env.WINDY_API_KEY
-          }
-        );
+        const response = await axios.post(windyAPIURL, {
+          lat: location.lat,
+          lon: location.lon,
+          model: "gfs",
+          parameters: ["temp"],
+          levels: ["surface"],
+          key: process.env.WINDY_API_KEY,
+        });
 
         if (response.status !== 200 || !response.data["temp-surface"]) {
           return { ...location, temperature: null };
         }
 
-        // convert from kelvin to celsius
-        const temperatures = response.data["temp-surface"].map(temp => temp - 273.15);
-        const avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
+        const temperatures = response.data["temp-surface"].map(
+          (temp) => temp - 273.15
+        );
+        const avgTemp =
+          temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
 
         return {
           name: location.name,
           lat: location.lat,
           lon: location.lon,
-          temperature: avgTemp.toFixed(2),             // avg temp in celsius
-          date: new Date().toISOString().split("T")[0] // current date
+          temperature: avgTemp.toFixed(2),
+          date: new Date().toISOString().split("T")[0],
         };
       })
     );
@@ -182,4 +207,10 @@ const getWindyDataForMap = async (req, res) => {
   }
 };
 
-module.exports = { fetchAndInsertWindyData, getWindyDataForToday, getWindyDataForSevenDaysChart, getWindyDataForMap };
+module.exports = {
+  syncWindyData,
+  fetchAndInsertWindyData,
+  getWindyDataForToday,
+  getWindyDataForSevenDaysChart,
+  getWindyDataForMap,
+};
